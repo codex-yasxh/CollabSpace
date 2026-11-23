@@ -7,6 +7,7 @@ import CollaborationCaret from "@tiptap/extension-collaboration-caret";
 import { useAuth } from "../context/AuthContext.js";
 import { useCollabSession, type CollabSession } from "../hooks/useCollabSession.js";
 import { useActiveCollaborators } from "../hooks/useActiveCollaborators.js";
+import { useSaveStatus } from "../hooks/useSaveStatus.js";
 import { renderCaret, selectionRender } from "../lib/caret.js";
 import { getPresenceColor } from "../lib/presence.js";
 import {
@@ -28,6 +29,7 @@ import {
 import { ShareDialog, type MemberItem } from "../components/ShareDialog.js";
 import { EditorToolbar } from "../components/EditorToolbar.js";
 import { DocumentTitleInput } from "../components/DocumentTitleInput.js";
+import { StatusIndicator } from "../components/StatusIndicator.js";
 import { Users, ChevronDown, ArrowLeft } from "lucide-react";
 
 interface DocumentDetail {
@@ -339,6 +341,7 @@ export function DocumentPage() {
   const isViewer = effectiveRole === "VIEWER";
   const session = useCollabSession(document.id);
   const activeCollaborators = useActiveCollaborators(session?.provider, user?.id);
+  const saveStatus = useSaveStatus(session?.provider);
 
   return (
     <ToastProvider swipeDirection="right">
@@ -370,6 +373,8 @@ export function DocumentPage() {
           </div>
 
           <div className="flex items-center gap-3">
+            <StatusIndicator text={saveStatus.text} />
+
             {activeCollaborators.length > 0 && (
               <AvatarStack users={activeCollaborators} max={4} />
             )}
