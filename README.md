@@ -1,5 +1,7 @@
 ﻿# CollabSpace
 
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/codex-yasxh/CollabSpace)
+
 CollabSpace is a real-time collaborative document editing platform modeled after Google Docs. It provides conflict-free multi-user text editing, live presence indicators, deterministic collaborator colors, granular role-based access control, debounced database persistence, and offline reconnection convergence.
 
 ---
