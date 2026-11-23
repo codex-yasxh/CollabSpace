@@ -215,6 +215,50 @@ describe("Document Endpoints & Permissions (Vitest + Supertest)", () => {
       expect(res.body.document.role).toBe("VIEWER");
     });
 
+    it("Owner CAN change link_access to EDITOR and non-member receives EDITOR", async () => {
+      const res = await request(app)
+        .patch(`/api/documents/${testDocId}`)
+        .set("Cookie", [ownerCookie])
+        .send({ link_access: "EDITOR" })
+        .expect(200);
+      expect(res.body.document.link_access).toBe("EDITOR");
+
+      // Non-member now gets role EDITOR
+      const getRes = await request(app)
+        .get(`/api/documents/${testDocId}`)
+        .set("Cookie", [noAccessCookie])
+        .expect(200);
+      expect(getRes.body.document.role).toBe("EDITOR");
+
+      // Non-member can rename when link_access is EDITOR
+      await request(app)
+        .patch(`/api/documents/${testDocId}`)
+        .set("Cookie", [noAccessCookie])
+        .send({ title: "Renamed by Link Editor" })
+        .expect(200);
+    });
+
+    it("Viewer member is promoted to EDITOR when link_access is EDITOR", async () => {
+      const res = await request(app)
+        .get(`/api/documents/${testDocId}`)
+        .set("Cookie", [viewerCookie])
+        .expect(200);
+      expect(res.body.document.role).toBe("EDITOR");
+    });
+
+    it("Owner can revert link_access to NONE and non-member gets 403 again", async () => {
+      await request(app)
+        .patch(`/api/documents/${testDocId}`)
+        .set("Cookie", [ownerCookie])
+        .send({ link_access: "NONE" })
+        .expect(200);
+
+      await request(app)
+        .get(`/api/documents/${testDocId}`)
+        .set("Cookie", [noAccessCookie])
+        .expect(403);
+    });
+
     // 4. DELETE /api/documents/:id: Owner only
     it("Viewer and Editor CANNOT delete document (403)", async () => {
       await request(app)
