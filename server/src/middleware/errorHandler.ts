@@ -39,6 +39,16 @@ export function errorHandler(
     return;
   }
 
+  if (err instanceof SyntaxError && "status" in err && (err as { status?: number }).status === 400) {
+    res.status(400).json({
+      error: {
+        code: "BAD_REQUEST",
+        message: "Malformed JSON payload.",
+      },
+    });
+    return;
+  }
+
   console.error("Unhandled error:", err);
   res.status(500).json({
     error: {
