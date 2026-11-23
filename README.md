@@ -16,7 +16,7 @@ CollabSpace is a real-time collaborative document editing platform modeled after
 
 ---
 
-## 2. Quick Start (3-Command Setup)
+## 2. Quick Start Setup
 
 Follow these steps to set up and start the application from a clean repository clone:
 
@@ -24,14 +24,19 @@ Follow these steps to set up and start the application from a clean repository c
 # 1. Start PostgreSQL database container in the background
 docker compose up -d
 
-# 2. Install dependencies, run database migrations, and seed initial demo data
+# 2. Copy the environment variables template for the server
+cp server/.env.example server/.env
+
+# 3. Install dependencies, run database migrations, and seed initial demo data
 npm install
 npm run migrate
 npm run seed
 
-# 3. Start both Express backend (port 3001) and Vite frontend (port 5173) concurrently
+# 4. Start both Express backend (port 3001) and Vite frontend (port 5173) concurrently
 npm run dev
 ```
+
+*(On Windows PowerShell, use `Copy-Item server/.env.example server/.env`)*
 
 Once running, open [http://localhost:5173](http://localhost:5173) in your browser.
 
@@ -276,16 +281,25 @@ flowchart TD
 
 ## 8. Verification & Test Suite
 
-The project includes an end-to-end automated test suite covering unit logic, permission matrices, REST APIs, WebSocket protocols, and CRDT convergence:
+The project includes an end-to-end automated test suite covering unit logic, permission matrices, REST APIs, WebSocket protocols, and CRDT convergence.
+
+Integration tests run against an isolated test database (`collabspace_test`) configured in `server/vitest.config.ts`. On a fresh PostgreSQL container, provision the test database before running tests:
 
 ```bash
-# Run the complete test suite across both server and client
+# 1. Create the test database in the PostgreSQL container (if not already present)
+docker exec collabspace-postgres psql -U collabspace -c "CREATE DATABASE collabspace_test;"
+
+# 2. Apply migrations to the test database
+DATABASE_URL=postgresql://collabspace:collabspace_dev@localhost:5432/collabspace_test npm run migrate
+# (On Windows PowerShell: $env:DATABASE_URL="postgresql://collabspace:collabspace_dev@localhost:5432/collabspace_test"; npm run migrate)
+
+# 3. Run the complete test suite across both server and client
 npm test
 
-# Run TypeScript typechecks across both packages
+# 4. Run TypeScript typechecks across both packages
 npm run typecheck
 
-# Run ESLint across the repository
+# 5. Run ESLint across the repository
 npm run lint
 ```
 
