@@ -23,3 +23,17 @@ export async function requireAuth(req: Request, _res: Response, next: NextFuncti
   req.user = user;
   next();
 }
+
+export async function optionalAuth(req: Request, _res: Response, next: NextFunction): Promise<void> {
+  const token = req.cookies?.[AUTH_COOKIE_NAME] as string | undefined;
+  if (token) {
+    const payload = verifyToken(token);
+    if (payload) {
+      const user = await findById(payload.userId);
+      if (user) {
+        req.user = user;
+      }
+    }
+  }
+  next();
+}
