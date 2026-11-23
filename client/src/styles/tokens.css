@@ -1,0 +1,32 @@
+:root {
+  /* Neutrals per blueprint section 4.3 */
+  --fog: #ECEEF1;
+  --paper: #FFFFFF;
+  --ink: #1B2230;
+  --ink-soft: #566073;
+  --line: #D8DCE2;
+  --wash: #F5F6F8;
+  --focus: #3555D6;
+  --danger: #B3261E;
+
+  /* Presence palette */
+  --coral: #C4412E;
+  --ochre: #936000;
+  --moss: #37762A;
+  --teal: #0B7480;
+  --cobalt: #2B58CE;
+  --violet: #7046C9;
+  --magenta: #AE2F86;
+
+  /* Selection highlight = presence color at 20% alpha */
+  --selection-alpha: 0.2;
+
+  /* Radius hierarchy */
+  --radius-page: 2px;
+  --radius-control: 6px;
+  --radius-layer: 10px;
+
+  /* Fonts */
+  --font-ui: "Hanken Grotesk Variable", "Hanken Grotesk", sans-serif;
+  --font-doc: "Source Serif 4 Variable", "Source Serif 4", serif;
+}

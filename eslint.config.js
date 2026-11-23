@@ -1,9 +1,11 @@
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
+  {
+    ignores: ["**/node_modules/**", "**/dist/**", "dist/**", "**/coverage/**", "agent_docs/**", "**/*.config.js"],
+  },
   ...tseslint.configs.recommended,
   {
-    ignores: ["**/node_modules/**", "**/dist/**", "**/coverage/**", "agent_docs/**", "**/*.config.js"],
     rules: {
       "@typescript-eslint/no-unused-vars": [
         "error",

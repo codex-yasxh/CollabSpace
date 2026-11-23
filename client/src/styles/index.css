@@ -1,0 +1,90 @@
+@import "@fontsource-variable/hanken-grotesk";
+@import "@fontsource-variable/source-serif-4";
+@import "./tokens.css";
+@import "tailwindcss";
+
+@theme {
+  /* Disable default color palette */
+  --color-*: initial;
+
+  --color-transparent: transparent;
+  --color-current: currentColor;
+
+  /* Neutrals */
+  --color-fog: var(--fog);
+  --color-paper: var(--paper);
+  --color-white: #FFFFFF;
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-line: var(--line);
+  --color-wash: var(--wash);
+  --color-focus: var(--focus);
+  --color-danger: var(--danger);
+
+  /* Presence palette */
+  --color-coral: var(--coral);
+  --color-ochre: var(--ochre);
+  --color-moss: var(--moss);
+  --color-teal: var(--teal);
+  --color-cobalt: var(--cobalt);
+  --color-violet: var(--violet);
+  --color-magenta: var(--magenta);
+
+  /* Fonts */
+  --font-sans: var(--font-ui);
+  --font-serif: var(--font-doc);
+
+  /* Radius hierarchy */
+  --radius-page: 2px;
+  --radius-control: 6px;
+  --radius-layer: 10px;
+  --radius-sm: 2px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-full: 9999px;
+
+  /* UI & Document Type Scale */
+  --text-ui-xs: 13px;
+  --text-ui-xs--line-height: 18px;
+  --text-ui-sm: 15px;
+  --text-ui-sm--line-height: 20px;
+  --text-ui-md: 18px;
+  --text-ui-md--line-height: 24px;
+  --text-ui-lg: 24px;
+  --text-ui-lg--line-height: 30px;
+
+  --text-doc-body: 17px;
+  --text-doc-body--line-height: 1.65;
+  --text-doc-h3: 19px;
+  --text-doc-h3--line-height: 24px;
+  --text-doc-h2: 24px;
+  --text-doc-h2--line-height: 30px;
+  --text-doc-h1: 32px;
+  --text-doc-h1--line-height: 38px;
+
+  /* Shadows */
+  --shadow-page: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-layer: 0 4px 12px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04);
+  --shadow-tooltip: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+@layer base {
+  *, ::before, ::after {
+    box-sizing: border-box;
+  }
+
+  body {
+    background-color: var(--fog);
+    color: var(--ink);
+    font-family: var(--font-ui);
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+}
