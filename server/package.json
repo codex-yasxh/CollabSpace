@@ -1,0 +1,12 @@
+{
+  "name": "server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "dev": "echo \"server dev pending T0.3\"",
+    "migrate": "echo \"migrate pending T0.5\"",
+    "seed": "echo \"seed pending T7.5\""
+  }
+}
