@@ -161,7 +161,7 @@ flowchart TD
             YDoc["Y.Doc (CRDT)<br/>Fragment: 'default'"]
             Awareness["Awareness Protocol<br/>Presence, Carets & Flags"]
             WriteFilter["Viewer Write Filter<br/>Drops unauth Sync updates"]
-            Debounce["Debounced Persist<br/>2000ms flush + 30s eviction"]
+            Debounce["Debounced Persist<br/>2000ms idle / 10s max debounce<br/>Immediate flush on disconnect"]
         end
     end
 
@@ -189,19 +189,19 @@ flowchart TD
 
 1. **Client SPA (`client/`)**:
    - Built with **React 18**, **Tiptap v2**, **Yjs**, **y-websocket**, and **Tailwind CSS**.
-   - Custom extensions: `@tiptap/extension-collaboration` and `@tiptap/extension-collaboration-cursor`.
-   - Custom hook `useSaveStatus`: listens to custom protocol messages (message type `4`) to display real-time save states (`"Saved"`, `"Saving..."`, `"Offline"`).
+   - Custom extensions: `@tiptap/extension-collaboration` (configured with `document: session.ydoc` in [DocumentPage.tsx](client/src/pages/DocumentPage.tsx#L78-L80)) and `@tiptap/extension-collaboration-caret` ([DocumentPage.tsx](client/src/pages/DocumentPage.tsx#L81-L90)).
+   - Custom hook `useSaveStatus`: listens to custom protocol messages (message type `4`, `MSG_SAVE`) via `provider.messageHandlers[4]` to display real-time save states (`"Connecting"`, `"Saving"`, `"Saved HH:MM"`, `"Offline"`) in [useSaveStatus.ts](client/src/hooks/useSaveStatus.ts#L61-L86).
 
 2. **Express & WebSocket Backend (`server/`)**:
    - REST API handles authentication, document creation, search, deletion, and sharing permissions.
-   - `wsServer.ts` intercepts WebSocket upgrade requests on `/ws`, parses the `cs_session` HTTP-only cookie, and validates document membership before granting connection.
-   - Enforces the permission matrix: `OWNER` > `EDITOR` > `VIEWER` > `NONE`.
+   - `wsServer.ts` intercepts WebSocket upgrade requests on `/collab/:documentId` ([wsServer.ts](server/src/modules/collaboration/wsServer.ts#L41-L57)), parses the `cs_session` HTTP-only cookie ([wsServer.ts](server/src/modules/collaboration/wsServer.ts#L73)), verifies the JWT token ([wsServer.ts](server/src/modules/collaboration/wsServer.ts#L80-L90)), validates origin against `ALLOWED_ORIGINS` ([wsServer.ts](server/src/modules/collaboration/wsServer.ts#L66-L70)), and resolves document permissions before granting connection ([wsServer.ts](server/src/modules/collaboration/wsServer.ts#L106-L110)).
+   - Enforces the permission matrix: `OWNER` > `EDITOR` > `VIEWER` > `NONE` via `resolveRole` in [resolveRole.ts](server/src/modules/access/resolveRole.ts#L12-L32).
 
 3. **In-Memory Collaboration Engine (`server/src/modules/collaboration/`)**:
-   - **`RoomManager`**: Manages document rooms in memory. Implements cold-load message buffering so messages arriving during database queries are not lost.
-   - **`DocumentRoom`**: Wraps the document's `Y.Doc`. Applies incoming binary sync updates, manages collaborator awareness states, and drops unauthorized updates from Viewers.
-   - **Debounced Persistence**: Buffers changes in memory and flushes binary state (`Y.encodeStateAsUpdate(ydoc)`) to PostgreSQL after 2000ms of inactivity, or immediately upon the last collaborator's departure.
-   - **Eviction Timer**: Automatically releases idle document rooms from server memory 30 seconds after the last connection disconnects.
+   - **`RoomManager`** ([roomManager.ts](server/src/modules/collaboration/roomManager.ts#L3-L126)): Manages document rooms in memory. Implements concurrent cold-load promise caching (`rooms: Map<string, Promise<Room>>` at line 4) and room eviction on document deletion (`evictRoomOnDelete` at lines 62-84).
+   - **`Room`** ([room.ts](server/src/modules/collaboration/room.ts#L17-L162)): Wraps the document's `Y.Doc` and awareness instance. Manages active connections (`conns: Set<Connection>` at line 21).
+   - **Debounced Persistence** ([room.ts](server/src/modules/collaboration/room.ts#L85-L102)): Buffers changes in memory using a 2000ms idle debounce with a 10,000ms maximum wait from the first unpersisted edit (`Math.min(2000, Math.max(0, 10000 - (now - this.firstDirtyAt)))` at line 98).
+   - **Immediate Flush on Last Connection Departure** ([protocol.ts](server/src/modules/collaboration/protocol.ts#L208-L210) & [room.ts](server/src/modules/collaboration/room.ts#L148-L152)): When the last client disconnects from a room (`room.conns.size === 0`), `onLastConnectionLeft()` triggers an immediate database flush without delay.
 
 ---
 
@@ -222,54 +222,55 @@ flowchart TD
 
 ### Q1: Why use a CRDT (Yjs / YATA) instead of Operational Transformation (OT)?
 **Answer**:
-- **Operational Transformation (OT)** requires a central server to linearize and transform concurrent operation pairs ($O_1' = T(O_1, O_2)$). If operations arrive out of order, or if clients edit while disconnected, the transformation matrix becomes exponentially complex and prone to edge-case desynchronization.
+- **Operational Transformation (OT)** requires a centralized server to linearize operations and transform concurrent operation pairs ($O_1' = T(O_1, O_2)$). If operations arrive out of order, or if clients edit while disconnected, the transformation matrix becomes exponentially complex and prone to edge-case desynchronization.
 - **Yjs (YATA algorithm)** is a Conflict-free Replicated Data Type. Instead of transforming operations, it assigns every character/node a globally unique, immutable identifier `(client, clock)`. Operations commute mathematically: regardless of the order in which two peers receive updates, their internal graph converges to the identical sequence.
-- **Benefits for CollabSpace**:
-  1. Complete tolerance to network latency and out-of-order delivery.
-  2. Native, effortless offline editing and seamless reconnection convergence.
-  3. No need for complex lock managers or operation log rewriters on the server.
+- **Code implementation**:
+  - Client editor binding: [DocumentPage.tsx](client/src/pages/DocumentPage.tsx#L78-L80) configures `Collaboration.configure({ document: session.ydoc })`.
+  - Server room binding: [room.ts](server/src/modules/collaboration/room.ts#L19) maintains `readonly doc: Y.Doc`.
+  - Update propagation: [protocol.ts](server/src/modules/collaboration/protocol.ts#L109-L123) listens on `room.doc.on("update")` and broadcasts raw CRDT binary updates via `syncProtocol.writeUpdate` to all peer connections.
 
 ### Q2: How do State Vectors and Vector Clocks work in Yjs synchronization?
 **Answer**:
-- In Yjs, each client maintains an internal monotonic counter (clock) that increments with each atomic operation.
-- A **State Vector** is a compact representation of the highest clock seen for every client ID: `{ [clientId: number]: number }`.
-- When a client connects or reconnects:
-  1. The client transmits its State Vector (Step 1 Sync) using `Y.encodeStateVector(ydoc)`.
-  2. The server compares the client's vector against its own document state.
-  3. The server computes only the missing operations using `Y.diffUpdate(ydoc, clientStateVector)` and transmits them back (Step 2 Sync).
+- In Yjs, each client maintains an internal monotonic counter (clock) that increments with each atomic operation. A **State Vector** is a compact representation of the highest clock seen for every client ID: `{ [clientId: number]: number }`.
+- In CollabSpace, the client and server exchange state vectors using the standard `y-protocols/sync` two-step handshake:
+  1. **Sync Step 1 (State Vector Exchange)**: Upon connection attachment in [protocol.ts](server/src/modules/collaboration/protocol.ts#L153-L157), the server transmits its State Vector to the client using `syncProtocol.writeSyncStep1(syncEncoder, room.doc)`. The client's `WebsocketProvider` simultaneously sends its own State Vector.
+  2. **Sync Step 2 (Differential Update)**: When the server receives the client's sync message in [protocol.ts](server/src/modules/collaboration/protocol.ts#L61-L69), `syncProtocol.readSyncMessage(decoder, encoder, room.doc, conn)` internally evaluates the client's state vector against the server document using `Y.encodeStateAsUpdate(doc, clientStateVector)` (diff update) and sends back only the missing operations.
+  3. **Delta Application**: When either peer receives Step 2 updates, `readSyncMessage` applies the missing delta to the local `Y.Doc` using `Y.applyUpdate(doc, update, origin)`.
 - **Efficiency**: Instead of transferring the entire document content across the wire on every connection, Yjs exchanges only the differential slice missing from the receiver.
 
 ### Q3: How does the Eviction and Room Lifecycle strategy work?
 **Answer**:
-- **Cold Room Loading**: When a client requests a document not currently in server memory, the server creates a `DocumentRoom` and initiates an asynchronous query to fetch `content_state bytea` from PostgreSQL.
-- **Message Buffering**: To prevent race conditions during this asynchronous I/O window, incoming WebSocket messages are placed in a memory queue. Once the database load completes, buffered updates are applied in order before processing live traffic.
-- **Eviction Timer**: To prevent server memory exhaustion (OOM), rooms are not held in memory indefinitely. When the last client disconnects from a room:
-  1. An immediate database flush is triggered to ensure zero data loss.
-  2. A 30-second eviction timer is initiated.
-  3. If another client connects within 30 seconds, the timer is cleared and the room stays warm.
-  4. If the timer expires, the room is deleted from the `RoomManager` memory map, allowing Node.js garbage collection to reclaim memory.
+- **Cold Room Loading**: When a client requests a document not currently in server memory, `RoomManager.getRoom(docId)` in [roomManager.ts](server/src/modules/collaboration/roomManager.ts#L10-L20) creates and caches a loading promise (`this.rooms.set(docId, p)`), calling `Room.load(docId)` in [room.ts](server/src/modules/collaboration/room.ts#L44-L62) to asynchronously fetch `content_state bytea` from PostgreSQL. Caching the promise ensures concurrent cold requests share a single database query.
+- **Message Buffering**: To prevent race conditions during this asynchronous I/O window, incoming WebSocket messages are placed in an in-memory queue (`earlyMessages` in [index.ts](server/src/modules/collaboration/index.ts#L17-L40)). Once `Room.load` completes, the connection is attached and buffered messages are replayed into the socket event emitter.
+- **Immediate Flush on Last Client Departure**: In [protocol.ts](server/src/modules/collaboration/protocol.ts#L208-L210), when a connection closes and `room.conns.size === 0`, the server calls `room.onLastConnectionLeft()` in [room.ts](server/src/modules/collaboration/room.ts#L148-L152), immediately executing an asynchronous database flush if dirty.
+- **Eviction on Document Deletion**: When a document is deleted via REST API, `roomManager.evictRoomOnDelete(docId)` in [roomManager.ts](server/src/modules/collaboration/roomManager.ts#L62-L84) deletes the room from memory, cancels any pending debounce timers, sets `dirty = false`, closes all active sockets with code `4404` ("Document deleted"), and destroys the room.
+- **Graceful Process Shutdown**: Traps for `SIGTERM` and `SIGINT` in [index.ts](server/src/modules/collaboration/index.ts#L51-L56) call `roomManager.flushAllRooms()` ([roomManager.ts](server/src/modules/collaboration/roomManager.ts#L89-L103)) to persist all dirty rooms before process exit.
 
 ### Q4: How does the Debounced Persistence mechanism handle edits that arrive during an active flush?
 **Answer**:
-- In naive implementations, an asynchronous write to the database (`UPDATE documents SET content_state = $1`) can overwrite newer edits that arrived while the database query was running, or clear the `dirty` flag prematurely.
-- **CollabSpace Version Tracking Solution**:
-  1. The room maintains two counters: `editVersion` (incremented on every local or remote edit) and `lastFlushedVersion`.
-  2. When the debounce timer (2000ms) fires, the room captures the current version: `flushingVersion = this.editVersion`.
-  3. The room encodes the state and writes to PostgreSQL.
-  4. When the database query succeeds, `this.lastFlushedVersion = flushingVersion`.
-  5. The room checks: `if (this.editVersion > this.lastFlushedVersion)`. If new edits arrived during the database query, the room remains `dirty` and schedules another debounced flush. If no new edits arrived, `dirty` is set to `false`, and custom message type `4` (`SAVED`) is broadcast to all connected clients.
+- Naive implementations that clear a `dirty` flag upon asynchronous database completion risk losing edits that arrive while the `UPDATE` query is in-flight.
+- **CollabSpace Version Tracking Solution** ([room.ts](server/src/modules/collaboration/room.ts#L33, L113-L134) & [protocol.ts](server/src/modules/collaboration/protocol.ts#L109-L123)):
+  1. The room maintains a monotonic version counter: `this.currentVersion: number = 0` in [room.ts](server/src/modules/collaboration/room.ts#L33).
+  2. Every time an edit update is applied to `room.doc`, `room.currentVersion++` is executed in [protocol.ts](server/src/modules/collaboration/protocol.ts#L110).
+  3. When `flush()` initiates in [room.ts](server/src/modules/collaboration/room.ts#L104-L146), it captures the exact version at query start: `const versionAtStart = this.currentVersion` ([room.ts](server/src/modules/collaboration/room.ts#L114)).
+  4. The binary update `Y.encodeStateAsUpdate(this.doc)` is written to PostgreSQL ([room.ts](server/src/modules/collaboration/room.ts#L117-L121)).
+  5. Upon database query completion, the room checks `if (this.currentVersion === versionAtStart)` ([room.ts](server/src/modules/collaboration/room.ts#L124)):
+     - **Clean**: If no new edits arrived, `this.dirty = false; this.lastSavedAt = Date.now();` and the server broadcasts `MSG_SAVE` (`"saved"`) with the timestamp to all clients ([room.ts](server/src/modules/collaboration/room.ts#L125-L127)).
+     - **Dirty**: If edits arrived during the database query (`this.currentVersion !== versionAtStart`), `this.dirty = true; this.firstDirtyAt = Date.now();` is retained, and a new flush is scheduled after 2000ms ([room.ts](server/src/modules/collaboration/room.ts#L128-L134)).
+  6. **Flush Serialization**: If `flush()` is invoked while another flush is currently running (`this.flushing === true`), `this.flushQueued = true` ensures that another flush will immediately execute as soon as the active query finishes ([room.ts](server/src/modules/collaboration/room.ts#L105-L107, L141-L144)).
 
 ### Q5: How are security and authorization boundaries enforced across REST and WebSockets?
 **Answer**:
-- **Handshake Authentication**: The WebSocket upgrade handler (`server/src/modules/collaboration/wsServer.ts`) parses the HTTP-only `cs_session` cookie and verifies the JWT payload (`{ sub: userId }`). Unauthenticated upgrade requests are rejected immediately with HTTP 401.
-- **Role Resolution**: Permissions are evaluated via `resolveRole(userId, documentId)` enforcing:
+- **Handshake Authentication**: The WebSocket upgrade handler in [wsServer.ts](server/src/modules/collaboration/wsServer.ts#L41-L120) extracts the `cs_session` cookie via `parseCookie(req.headers.cookie, "cs_session")` ([wsServer.ts](server/src/modules/collaboration/wsServer.ts#L73)) and verifies the JWT payload (`{ sub: userId }`) using `jwt.verify` ([wsServer.ts](server/src/modules/collaboration/wsServer.ts#L80-L90)). Invalid tokens or missing cookies are rejected immediately with HTTP 401.
+- **Allowed Origin Check**: Upgrades must originate from an origin specified in `env.ALLOWED_ORIGINS` ([wsServer.ts](server/src/modules/collaboration/wsServer.ts#L66-L70)), rejecting spoofed cross-origin sockets with HTTP 403.
+- **Role Resolution Hierarchy**: Permissions are resolved in [resolveRole.ts](server/src/modules/access/resolveRole.ts#L12-L32) according to the precedence:
   $$\text{OWNER} > \text{EDITOR} > \text{VIEWER} > \text{NONE}$$
-  Link access settings are checked if the user is not an explicit member.
+  Users without access are rejected during handshake with HTTP 403 ([wsServer.ts](server/src/modules/collaboration/wsServer.ts#L106-L110)).
 - **Viewer Write Filtering**:
-  - The WebSocket protocol uses `y-protocols` sync messages. Message Type 0 (Sync) contains Step 2 updates containing document mutations.
-  - For clients with `VIEWER` role, the server parses the message header. If it contains a write update, the server silently discards it without broadcasting it or applying it to the server's `Y.Doc`.
-  - Type 1 (Awareness / presence) messages from Viewers are permitted, allowing Viewers to share their cursor position and view others without being able to modify text.
-- **Real-Time Eviction**: When an Owner changes a user's role or link access via REST API, the server calls `roomManager.evictConnection(documentId, userId)`. The active socket is closed with status code `4403`, immediately revoking access.
+  - The WebSocket protocol uses `y-protocols/sync` messages. Sync Step 2 / update packets (message type 0) contain document mutations.
+  - For clients with `role === "VIEWER"`, [protocol.ts](server/src/modules/collaboration/protocol.ts#L48-L59) inspects the packet header. If `syncSubType !== syncProtocol.messageYjsSyncStep1`, the server silently drops the update packet without broadcasting or applying it to `room.doc`.
+  - Awareness messages (type 1) from Viewers are permitted ([protocol.ts](server/src/modules/collaboration/protocol.ts#L73-L92)), allowing Viewers to share cursor positions and view collaborators without being able to mutate content.
+- **Real-Time Eviction**: When a user's membership role or document link access is modified or revoked in [memberService.ts](server/src/modules/documents/memberService.ts#L60, L88) or [documentService.ts](server/src/modules/documents/documentService.ts#L46), the server calls `roomManager.closeAllConnections(docId, 4403, "Access changed")` ([roomManager.ts](server/src/modules/collaboration/roomManager.ts#L41-L56)), severing the socket immediately.
 
 ---
 
