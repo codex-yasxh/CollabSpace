@@ -52,6 +52,7 @@
   --spacing-menu: 180px;
   --spacing-auth: 360px;
   --spacing-content: 880px;
+  --spacing-paper: 816px;
   --spacing-prose-doc: 75ch;
 
   /* Avatar typography */
@@ -149,6 +150,110 @@
   to {
     opacity: 1;
   }
+}
+
+/* Document prose and Tiptap styles */
+.ProseMirror {
+  outline: none;
+  font-family: var(--font-doc);
+  font-size: var(--text-doc-body);
+  line-height: var(--text-doc-body--line-height);
+  color: var(--ink);
+  min-height: 600px;
+}
+
+.ProseMirror p {
+  margin-top: 0;
+  margin-bottom: 1em;
+}
+
+.ProseMirror h1 {
+  font-size: var(--text-doc-h1);
+  line-height: var(--text-doc-h1--line-height);
+  font-weight: 600;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+}
+
+.ProseMirror h2 {
+  font-size: var(--text-doc-h2);
+  line-height: var(--text-doc-h2--line-height);
+  font-weight: 600;
+  margin-top: 1.25em;
+  margin-bottom: 0.5em;
+}
+
+.ProseMirror h3 {
+  font-size: var(--text-doc-h3);
+  line-height: var(--text-doc-h3--line-height);
+  font-weight: 600;
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+}
+
+.ProseMirror ul {
+  list-style-type: disc;
+  padding-left: 1.5em;
+  margin-top: 0;
+  margin-bottom: 1em;
+}
+
+.ProseMirror ol {
+  list-style-type: decimal;
+  padding-left: 1.5em;
+  margin-top: 0;
+  margin-bottom: 1em;
+}
+
+.ProseMirror blockquote {
+  border-left: 2px solid var(--line);
+  padding-left: 1rem;
+  margin-left: 0;
+  margin-right: 0;
+  margin-top: 1em;
+  margin-bottom: 1em;
+  color: var(--ink-soft);
+  font-style: italic;
+}
+
+.ProseMirror a {
+  color: var(--focus);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Remote collaboration carets and flags */
+.ProseMirror .collaboration-carets__cursor,
+.ProseMirror .collaboration-cursor__caret {
+  position: relative;
+  margin-left: -1px;
+  margin-right: -1px;
+  border-left: 2px solid;
+  border-right: 0;
+  pointer-events: none;
+  word-break: normal;
+}
+
+.ProseMirror .collaboration-carets__label,
+.ProseMirror .collaboration-cursor__label {
+  position: absolute;
+  top: -1.4em;
+  left: -2px;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  line-height: 14px;
+  font-weight: 500;
+  color: #ffffff;
+  padding: 1px 4px;
+  border-radius: 3px 3px 3px 0;
+  white-space: nowrap;
+  user-select: none;
+  pointer-events: none;
+  transition: opacity 150ms ease-out;
+}
+
+.ProseMirror .collaboration-carets__label[data-idle="true"] {
+  opacity: 0;
 }
 
 @media (prefers-reduced-motion: reduce) {

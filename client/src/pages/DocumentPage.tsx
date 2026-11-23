@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useEditor, EditorContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
 import { useAuth } from "../context/AuthContext.js";
 import {
   Button,
@@ -17,6 +19,7 @@ import {
   DropdownMenuSeparator,
 } from "../components/ui/index.js";
 import { ShareDialog, type MemberItem } from "../components/ShareDialog.js";
+import { EditorToolbar } from "../components/EditorToolbar.js";
 import { Users, ChevronDown, ArrowLeft } from "lucide-react";
 
 interface DocumentDetail {
@@ -226,12 +229,29 @@ export function DocumentPage() {
 
   const effectiveRole =
     forcedDialog === "share-viewer" ? "VIEWER" : document.role;
+  const isViewer = effectiveRole === "VIEWER";
+
+  const editor = useEditor({
+    editable: !isViewer,
+    extensions: [
+      StarterKit.configure({
+        link: {
+          openOnClick: false,
+          protocols: ["http", "https", "mailto"],
+          HTMLAttributes: {
+            rel: "noopener noreferrer nofollow",
+          },
+        },
+      }),
+    ],
+    content: `<h1>${document.title}</h1><p>Start writing your document here...</p>`,
+  });
 
   return (
     <ToastProvider swipeDirection="right">
       <div className="min-h-screen bg-fog text-ink font-sans flex flex-col">
         {/* Header Bar */}
-        <header className="w-full px-6 py-3 flex items-center justify-between border-b border-line bg-fog">
+        <header className="w-full px-6 py-3 flex items-center justify-between border-b border-line bg-fog shrink-0">
           <div className="flex items-center gap-3">
             <Link
               to="/"
@@ -299,16 +319,13 @@ export function DocumentPage() {
           </div>
         </header>
 
-        {/* Document Editor Placeholder Area (Canvas) */}
-        <main className="flex-1 w-full max-w-content mx-auto px-6 py-8 flex flex-col items-center">
-          <div className="w-full bg-paper border border-line rounded-page shadow-page min-h-96 p-12 flex flex-col">
-            <h1 className="text-doc-h1 font-serif font-bold text-ink mb-6">
-              {document.title}
-            </h1>
-            <p className="text-doc-body font-serif text-ink-soft">
-              This is the document workspace placeholder. The real-time collaborative
-              editor will be connected here in Milestone 6.
-            </p>
+        {/* Sticky flat Toolbar */}
+        <EditorToolbar editor={editor} disabled={isViewer} />
+
+        {/* Document Editor Canvas */}
+        <main className="flex-1 w-full bg-fog py-8 px-4 flex justify-center overflow-y-auto">
+          <div className="w-full max-w-paper bg-paper border border-line rounded-page shadow-page p-18 max-md:p-5 max-md:max-w-none">
+            <EditorContent editor={editor} />
           </div>
         </main>
 
