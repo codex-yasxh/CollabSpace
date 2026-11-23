@@ -12,22 +12,38 @@ export function setupCollaboration(server: HttpServer) {
     }
   });
 
-  wss.on("connection", async (ws, _req, context: AuthenticatedConnectionContext) => {
-    try {
-      const room = await roomManager.getRoom(context.documentId);
-      attachConnection(room, {
-        ws,
-        user: context.user,
-        role: context.role,
-        awarenessIds: new Set(),
+  wss.on("connection", (ws, _req, context: AuthenticatedConnectionContext) => {
+    // Buffer any incoming messages that arrive before async Room.load completes
+    const earlyMessages: unknown[] = [];
+    const onEarlyMessage = (data: unknown) => {
+      earlyMessages.push(data);
+    };
+    ws.on("message", onEarlyMessage);
+
+    void roomManager
+      .getRoom(context.documentId)
+      .then((room) => {
+        ws.off("message", onEarlyMessage);
+        const conn = {
+          ws,
+          user: context.user,
+          role: context.role,
+          awarenessIds: new Set<number>(),
+        };
+        attachConnection(room, conn);
+
+        // Replay any early messages buffered while room was loading from DB
+        for (const data of earlyMessages) {
+          ws.emit("message", data);
+        }
+      })
+      .catch(() => {
+        try {
+          ws.close(1011, "Internal server error");
+        } catch {
+          // ignore
+        }
       });
-    } catch {
-      try {
-        ws.close(1011, "Internal server error");
-      } catch {
-        // ignore
-      }
-    }
   });
 
   // Flush all active rooms on process termination
