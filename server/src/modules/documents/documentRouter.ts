@@ -10,8 +10,13 @@ import {
   deleteDocument,
 } from "./documentRepository.js";
 import { AppError } from "../../middleware/errorHandler.js";
+import { memberRouter } from "./memberRouter.js";
+import { rooms } from "../collaboration/rooms.js";
 
 export const documentRouter = Router();
+
+// Mount member sub-routes (/api/documents/:id/members)
+documentRouter.use("/:id/members", memberRouter);
 
 // 1. Create document (auth required, single transaction)
 documentRouter.post(
@@ -80,6 +85,9 @@ documentRouter.patch(
       const docRole = await assertRole(docId, req.user?.id, requiredMinRole);
 
       const updated = await updateDocument(docId, data);
+      if (data.link_access !== undefined) {
+        rooms.closeAllConnections(docId);
+      }
       res.status(200).json({
         document: {
           ...updated,
@@ -101,6 +109,7 @@ documentRouter.delete(
     try {
       const docId = getDocIdParam(req);
       await deleteDocument(docId);
+      rooms.closeAllConnections(docId);
       res.status(200).json({ ok: true });
     } catch (error) {
       next(error);
