@@ -4,21 +4,18 @@ import { getPresenceColor, type PresenceColor } from "../../lib/presence.js";
 
 export interface AvatarProps extends React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Root> {
   name: string;
-  userId?: string | undefined;
+  userId: string;
   presenceColor?: PresenceColor | undefined;
   isCurrentUser?: boolean | undefined;
   size?: ("sm" | "md") | undefined;
 }
 
 export function resolveAvatarColor(options: {
-  userId?: string | undefined;
-  name?: string | undefined;
+  userId: string;
   presenceColor?: PresenceColor | undefined;
 }): PresenceColor {
   if (options.presenceColor) return options.presenceColor;
-  if (options.userId) return getPresenceColor(options.userId).name;
-  if (options.name) return getPresenceColor(options.name).name;
-  return "coral";
+  return getPresenceColor(options.userId).name;
 }
 
 export function getInitials(name: string): string {
@@ -45,7 +42,7 @@ export const Avatar = React.forwardRef<
     ref,
   ) => {
     // Resolve presence color deterministically keyed by userId per blueprint 4.3
-    const resolvedColor = resolveAvatarColor({ userId, name, presenceColor });
+    const resolvedColor = resolveAvatarColor({ userId, presenceColor });
 
     const bgClass = {
       coral: "bg-coral",

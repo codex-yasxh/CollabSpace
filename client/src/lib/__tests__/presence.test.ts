@@ -26,7 +26,6 @@ describe("Presence & Avatar Color Unification", () => {
       // 2. Color resolved by Avatar component in the user menu dropdown
       const menuColor = resolveAvatarColor({
         userId: user.id,
-        name: user.name,
       });
 
       // Assert they are identical

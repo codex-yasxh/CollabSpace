@@ -289,13 +289,13 @@ export function KitPage() {
               <div>
                 <p className="text-ui-xs text-ink-soft mb-2">Deterministic presence palette (all &gt;= 4.5:1 contrast against white)</p>
                 <div className="flex flex-wrap items-center gap-3">
-                  <Avatar name="Aditya Sharma" presenceColor="coral" />
-                  <Avatar name="Bob Martin" presenceColor="ochre" />
-                  <Avatar name="Carol Davis" presenceColor="moss" />
-                  <Avatar name="David Kim" presenceColor="teal" />
-                  <Avatar name="Elena Rostova" presenceColor="cobalt" />
-                  <Avatar name="Frank Wright" presenceColor="violet" />
-                  <Avatar name="Grace Hopper" presenceColor="magenta" />
+                  <Avatar userId="user-1" name="Aditya Sharma" presenceColor="coral" />
+                  <Avatar userId="user-2" name="Bob Martin" presenceColor="ochre" />
+                  <Avatar userId="user-3" name="Carol Davis" presenceColor="moss" />
+                  <Avatar userId="user-4" name="David Kim" presenceColor="teal" />
+                  <Avatar userId="user-5" name="Elena Rostova" presenceColor="cobalt" />
+                  <Avatar userId="user-6" name="Frank Wright" presenceColor="violet" />
+                  <Avatar userId="user-7" name="Grace Hopper" presenceColor="magenta" />
                 </div>
               </div>
 
@@ -303,11 +303,11 @@ export function KitPage() {
                 <p className="text-ui-xs text-ink-soft mb-2">Current user has --ink ring; other collaborators have 2px --fog ring</p>
                 <div className="flex items-center gap-3">
                   <div className="flex items-center gap-2">
-                    <Avatar name="Aditya Sharma" isCurrentUser />
+                    <Avatar userId="user-self" name="Aditya Sharma" isCurrentUser />
                     <span className="text-ui-xs text-ink-soft">You (ink ring)</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Avatar name="Bob Martin" presenceColor="coral" />
+                    <Avatar userId="user-peer" name="Bob Martin" presenceColor="coral" />
                     <span className="text-ui-xs text-ink-soft">Peer (fog ring)</span>
                   </div>
                 </div>
