@@ -40,10 +40,10 @@ describe("Document Endpoints & Permissions (Vitest + Supertest)", () => {
     viewerUser = uRes.rows[2]!;
     noAccessUser = uRes.rows[3]!;
 
-    ownerCookie = `${AUTH_COOKIE_NAME}=${signToken({ userId: ownerUser.id, email: ownerUser.email })}`;
-    editorCookie = `${AUTH_COOKIE_NAME}=${signToken({ userId: editorUser.id, email: editorUser.email })}`;
-    viewerCookie = `${AUTH_COOKIE_NAME}=${signToken({ userId: viewerUser.id, email: viewerUser.email })}`;
-    noAccessCookie = `${AUTH_COOKIE_NAME}=${signToken({ userId: noAccessUser.id, email: noAccessUser.email })}`;
+    ownerCookie = `${AUTH_COOKIE_NAME}=${signToken({ sub: ownerUser.id })}`;
+    editorCookie = `${AUTH_COOKIE_NAME}=${signToken({ sub: editorUser.id })}`;
+    viewerCookie = `${AUTH_COOKIE_NAME}=${signToken({ sub: viewerUser.id })}`;
+    noAccessCookie = `${AUTH_COOKIE_NAME}=${signToken({ sub: noAccessUser.id })}`;
   });
 
   afterAll(async () => {

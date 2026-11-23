@@ -4,7 +4,7 @@ import type { CookieOptions } from "express";
 import { env } from "../../config/env.js";
 
 const BCRYPT_ROUNDS = 10;
-export const AUTH_COOKIE_NAME = "token";
+export const AUTH_COOKIE_NAME = "cs_session";
 
 export const AUTH_COOKIE_OPTIONS: CookieOptions = {
   httpOnly: true,
@@ -15,8 +15,7 @@ export const AUTH_COOKIE_OPTIONS: CookieOptions = {
 };
 
 export interface TokenPayload {
-  userId: string;
-  email: string;
+  sub: string;
 }
 
 export async function hashPassword(password: string): Promise<string> {
@@ -33,10 +32,9 @@ export function signToken(payload: TokenPayload): string {
 
 export function verifyToken(token: string): TokenPayload | null {
   try {
-    const decoded = jwt.verify(token, env.JWT_SECRET) as Record<string, unknown>;
-    const userId = (decoded.userId as string) || (decoded.sub as string);
-    if (typeof decoded === "object" && userId) {
-      return { userId, email: (decoded.email as string) || "" };
+    const decoded = jwt.verify(token, env.JWT_SECRET) as { sub?: string };
+    if (typeof decoded === "object" && decoded && typeof decoded.sub === "string") {
+      return { sub: decoded.sub };
     }
     return null;
   } catch {

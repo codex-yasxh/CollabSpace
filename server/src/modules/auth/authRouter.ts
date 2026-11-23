@@ -31,7 +31,7 @@ authRouter.post(
         password_hash: passwordHash,
       });
 
-      const token = signToken({ userId: user.id, email: user.email });
+      const token = signToken({ sub: user.id });
       res.cookie(AUTH_COOKIE_NAME, token, AUTH_COOKIE_OPTIONS);
 
       res.status(201).json({
@@ -64,7 +64,7 @@ authRouter.post(
         throw new AppError(401, "UNAUTHORIZED", "Email or password is incorrect.");
       }
 
-      const token = signToken({ userId: user.id, email: user.email });
+      const token = signToken({ sub: user.id });
       res.cookie(AUTH_COOKIE_NAME, token, AUTH_COOKIE_OPTIONS);
 
       res.status(200).json({

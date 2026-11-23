@@ -55,14 +55,14 @@ describe("T5.6 Collaboration Sync Server Integration Test Suite", () => {
     });
     viewerId = viewer.id;
 
-    const ownerToken = signToken({ userId: ownerId, email: "owner.integ@example.com" });
-    ownerCookie = `token=${ownerToken}; cs_session=${ownerToken}`;
+    const ownerToken = signToken({ sub: ownerId });
+    ownerCookie = `cs_session=${ownerToken}`;
 
-    const editorToken = signToken({ userId: editorId, email: "editor.integ@example.com" });
-    editorCookie = `token=${editorToken}; cs_session=${editorToken}`;
+    const editorToken = signToken({ sub: editorId });
+    editorCookie = `cs_session=${editorToken}`;
 
-    const viewerToken = signToken({ userId: viewerId, email: "viewer.integ@example.com" });
-    viewerCookie = `token=${viewerToken}; cs_session=${viewerToken}`;
+    const viewerToken = signToken({ sub: viewerId });
+    viewerCookie = `cs_session=${viewerToken}`;
 
     const app = createApp();
     server = http.createServer(app);

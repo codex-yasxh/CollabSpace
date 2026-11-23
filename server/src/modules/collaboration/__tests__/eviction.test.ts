@@ -54,11 +54,11 @@ describe("T5.5 Close & Eviction on Role Change and Document Delete", () => {
       [docId, editorId],
     );
 
-    const ownerToken = signToken({ userId: ownerId, email: "owner.eviction@example.com" });
-    ownerCookie = `token=${ownerToken}; cs_session=${ownerToken}`;
+    const ownerToken = signToken({ sub: ownerId });
+    ownerCookie = `cs_session=${ownerToken}`;
 
-    const editorToken = signToken({ userId: editorId, email: "editor.eviction@example.com" });
-    editorCookie = `token=${editorToken}; cs_session=${editorToken}`;
+    const editorToken = signToken({ sub: editorId });
+    editorCookie = `cs_session=${editorToken}`;
 
     app = createApp();
     server = http.createServer(app);
