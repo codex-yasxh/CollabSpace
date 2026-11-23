@@ -1,10 +1,14 @@
-/**
- * Collaboration rooms manager.
- * In M4, this is a stub providing closeAllConnections.
- * M5 will implement full Yjs room lifecycle and WebSocket connection handling.
- */
+import { roomManager } from "./roomManager.js";
+
 export const rooms = {
-  closeAllConnections: (_docId: string): void => {
-    // Stub for M5: closes active WebSocket connections when permissions change
+  closeAllConnections: (
+    docId: string,
+    code: number = 4403,
+    reason: string = "Access changed",
+  ): void => {
+    void roomManager.closeAllConnections(docId, code, reason);
+  },
+  evictRoomOnDelete: (docId: string): void => {
+    void roomManager.evictRoomOnDelete(docId);
   },
 };
