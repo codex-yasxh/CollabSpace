@@ -358,8 +358,6 @@ export function DocumentPage() {
               <span className="font-serif font-semibold text-ink">CollabSpace</span>
             </Link>
 
-            <span className="text-ink-soft text-ui-sm">/</span>
-
             <DocumentTitleInput
               title={document.title}
               canEdit={effectiveRole === "OWNER" || effectiveRole === "EDITOR"}
