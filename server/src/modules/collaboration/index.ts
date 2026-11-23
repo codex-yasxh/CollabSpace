@@ -1,4 +1,5 @@
-import type { Server as HttpServer } from "node:http";
+import type { Server as HttpServer, IncomingMessage } from "node:http";
+import type { WebSocket } from "ws";
 import { createCollaborationServer, type AuthenticatedConnectionContext } from "./wsServer.js";
 import { roomManager } from "./roomManager.js";
 import { attachConnection } from "./protocol.js";
@@ -12,7 +13,7 @@ export function setupCollaboration(server: HttpServer) {
     }
   });
 
-  wss.on("connection", (ws, _req, context: AuthenticatedConnectionContext) => {
+  wss.on("connection", (ws: WebSocket, _req: IncomingMessage, context: AuthenticatedConnectionContext) => {
     // Buffer any incoming messages that arrive before async Room.load completes
     const earlyMessages: unknown[] = [];
     const onEarlyMessage = (data: unknown) => {

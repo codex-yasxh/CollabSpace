@@ -132,7 +132,7 @@ export class Room {
         if (this.timer) clearTimeout(this.timer);
         this.timer = setTimeout(() => void this.flush(), 2000);
       }
-    } catch (err) {
+    } catch {
       // Stay dirty, retry after 2s
       if (this.timer) clearTimeout(this.timer);
       this.timer = setTimeout(() => void this.flush(), 2000);
