@@ -10,6 +10,10 @@ const envSchema = z.object({
   PORT: z.coerce.number().default(3001),
   NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
   CLIENT_ORIGIN: z.string().url().default("http://localhost:5173"),
+  ALLOWED_ORIGINS: z
+    .string()
+    .default("http://localhost:5173,http://127.0.0.1:5173")
+    .transform((val) => val.split(",").map((s) => s.trim()).filter(Boolean)),
   DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
   JWT_SECRET: z.string().min(32, "JWT_SECRET must be at least 32 characters long"),
 });
