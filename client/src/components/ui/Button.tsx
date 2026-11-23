@@ -24,7 +24,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ref,
   ) => {
     const baseStyles =
-      "inline-flex items-center justify-center font-sans font-medium transition-colors select-none rounded-[6px] focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer";
+      "inline-flex items-center justify-center font-sans font-medium transition-colors select-none rounded-[6px] focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2 disabled:bg-wash disabled:text-ink-soft disabled:cursor-not-allowed cursor-pointer";
 
     const sizeStyles = {
       sm: "h-[30px] px-2.5 text-ui-xs gap-1.5",
@@ -32,10 +32,14 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     }[size];
 
     const variantStyles = {
-      primary: "bg-ink text-paper hover:bg-ink/90 active:bg-ink",
-      secondary: "bg-paper text-ink border border-line hover:bg-wash active:bg-line/40",
-      ghost: "bg-transparent text-ink hover:bg-wash active:bg-line/30",
-      danger: "bg-danger text-paper hover:bg-danger/90 active:bg-danger",
+      primary:
+        "bg-ink text-paper hover:bg-ink/90 active:bg-ink disabled:bg-wash disabled:text-ink-soft disabled:border-transparent",
+      secondary:
+        "bg-paper text-ink border border-line hover:bg-wash active:bg-line/40 disabled:bg-wash disabled:text-ink-soft disabled:border-line",
+      ghost:
+        "bg-transparent text-ink hover:bg-wash active:bg-line/30 disabled:bg-transparent disabled:text-ink-soft/40",
+      danger:
+        "bg-danger text-paper hover:bg-danger/90 active:bg-danger disabled:bg-wash disabled:text-ink-soft disabled:border-transparent",
     }[variant];
 
     return (

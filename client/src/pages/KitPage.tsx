@@ -283,7 +283,7 @@ export function KitPage() {
           </section>
 
           {/* Avatar and AvatarStack */}
-          <section className="space-y-4">
+          <section id="avatar-section" className="space-y-4">
             <h2 className="text-ui-md font-medium text-ink">Presence: Avatar and AvatarStack</h2>
             <div className="bg-paper p-6 rounded-[6px] border border-line space-y-6">
               <div>

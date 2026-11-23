@@ -28,14 +28,17 @@ export function AvatarStack({ users, max = 4, className = "" }: AvatarStackProps
   const overflowUsers = overflowCount > 0 ? sortedUsers.slice(max) : [];
 
   return (
-    <div className={`flex items-center -space-x-2 ${className}`.trim()}>
-      {visibleUsers.map((user) => (
+    <div className={`flex items-center -space-x-1.5 ${className}`.trim()}>
+      {visibleUsers.map((user, index) => (
         <SimpleTooltip
           key={user.id}
           content={user.isCurrentUser ? `${user.name} (You)` : user.name}
           side="bottom"
         >
-          <div className="relative inline-block hover:z-10">
+          <div
+            className="relative inline-block transition-transform hover:z-20"
+            style={{ zIndex: 10 + (visibleUsers.length - index) }}
+          >
             <Avatar
               name={user.name}
               userId={user.id}
@@ -52,7 +55,7 @@ export function AvatarStack({ users, max = 4, className = "" }: AvatarStackProps
           side="bottom"
         >
           <div
-            className="relative inline-flex items-center justify-center shrink-0 w-[28px] h-[28px] rounded-full ring-2 ring-fog bg-wash text-ink-soft text-ui-xs font-medium select-none hover:z-10"
+            className="relative inline-flex items-center justify-center shrink-0 w-[28px] h-[28px] rounded-full ring-2 ring-fog bg-wash text-ink-soft text-ui-xs font-medium select-none z-[5]"
             aria-label={`${overflowCount} more collaborator${overflowCount > 1 ? "s" : ""}`}
           >
             +{overflowCount}

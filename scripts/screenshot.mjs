@@ -32,6 +32,14 @@ async function run() {
   await page.screenshot({ path: path1440Full, fullPage: true });
   console.log("Saved:", path1440Full);
 
+  // AvatarStack focused screenshot
+  const avatarSection = await page.$("#avatar-section");
+  if (avatarSection) {
+    const pathAvatar = path.join(outDir, "avatar-stack-fixed.png");
+    await avatarSection.screenshot({ path: pathAvatar });
+    console.log("Saved:", pathAvatar);
+  }
+
   // 390x844
   console.log("Capturing 390x844...");
   await page.setViewport({ width: 390, height: 844 });

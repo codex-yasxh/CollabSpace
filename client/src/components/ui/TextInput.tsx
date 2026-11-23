@@ -26,7 +26,7 @@ export const TextInput = React.forwardRef<HTMLInputElement, TextInputProps>(
           disabled={disabled}
           aria-invalid={!!error}
           aria-describedby={error ? errorId : hint ? hintId : undefined}
-          className={`h-[36px] px-3 font-sans text-ui-sm text-ink bg-paper border rounded-[6px] transition-colors placeholder:text-ink-soft/60 focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2 disabled:bg-wash disabled:text-ink-soft disabled:cursor-not-allowed ${
+          className={`h-[36px] px-3 font-sans text-ui-sm text-ink bg-paper border rounded-[6px] transition-colors placeholder:text-ink-soft focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2 disabled:bg-wash disabled:text-ink-soft disabled:cursor-not-allowed ${
             error ? "border-danger focus-visible:outline-danger" : "border-line hover:border-ink-soft/40 focus:border-line"
           } ${className}`.trim()}
           {...props}
