@@ -6,6 +6,7 @@ import Collaboration from "@tiptap/extension-collaboration";
 import CollaborationCaret from "@tiptap/extension-collaboration-caret";
 import { useAuth } from "../context/AuthContext.js";
 import { useCollabSession, type CollabSession } from "../hooks/useCollabSession.js";
+import { useActiveCollaborators } from "../hooks/useActiveCollaborators.js";
 import { renderCaret, selectionRender } from "../lib/caret.js";
 import { getPresenceColor } from "../lib/presence.js";
 import {
@@ -17,6 +18,7 @@ import {
   ToastDescription,
   ToastViewport,
   Avatar,
+  AvatarStack,
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
@@ -300,6 +302,7 @@ export function DocumentPage() {
     forcedDialog === "share-viewer" ? "VIEWER" : document.role;
   const isViewer = effectiveRole === "VIEWER";
   const session = useCollabSession(document.id);
+  const activeCollaborators = useActiveCollaborators(session?.provider, user?.id);
 
   return (
     <ToastProvider swipeDirection="right">
@@ -329,6 +332,10 @@ export function DocumentPage() {
           </div>
 
           <div className="flex items-center gap-3">
+            {activeCollaborators.length > 0 && (
+              <AvatarStack users={activeCollaborators} max={4} />
+            )}
+
             <Button
               variant="primary"
               size="sm"
