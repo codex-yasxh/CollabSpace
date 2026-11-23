@@ -12,7 +12,7 @@ export const SelectTrigger = React.forwardRef<
 >(({ className = "", children, ...props }, ref) => (
   <SelectPrimitive.Trigger
     ref={ref}
-    className={`flex h-[36px] w-full items-center justify-between px-3 py-1.5 text-ui-sm text-ink bg-paper border border-line rounded-[6px] transition-colors focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:bg-wash disabled:text-ink-soft cursor-pointer ${className}`.trim()}
+    className={`flex h-control-md w-full items-center justify-between px-3 py-1.5 text-ui-sm text-ink bg-paper border border-line rounded-control transition-colors focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:bg-wash disabled:text-ink-soft cursor-pointer ${className}`.trim()}
     {...props}
   >
     {children}
@@ -32,9 +32,9 @@ export const SelectContent = React.forwardRef<
       ref={ref}
       sideOffset={sideOffset}
       position={position}
-      className={`relative z-50 min-w-[8rem] overflow-hidden bg-paper border border-line rounded-[10px] shadow-layer animate-layer-in ${
+      className={`relative z-50 min-w-32 overflow-hidden bg-paper border border-line rounded-layer shadow-layer animate-layer-in ${
         position === "popper"
-          ? "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1"
+          ? "data-side-bottom:translate-y-1 data-side-left:-translate-x-1 data-side-right:translate-x-1 data-side-top:-translate-y-1"
           : ""
       } ${className}`.trim()}
       {...props}
@@ -59,7 +59,7 @@ export const SelectItem = React.forwardRef<
 >(({ className = "", children, ...props }, ref) => (
   <SelectPrimitive.Item
     ref={ref}
-    className={`relative flex w-full cursor-pointer select-none items-center rounded-[6px] py-1.5 pl-8 pr-2 text-ui-sm text-ink outline-none transition-colors data-[disabled]:pointer-events-none data-[disabled]:opacity-40 data-[highlighted]:bg-wash ${className}`.trim()}
+    className={`relative flex w-full cursor-pointer select-none items-center rounded-control py-1.5 pl-8 pr-2 text-ui-sm text-ink outline-none transition-colors data-disabled:pointer-events-none data-disabled:opacity-40 data-highlighted:bg-wash ${className}`.trim()}
     {...props}
   >
     <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">

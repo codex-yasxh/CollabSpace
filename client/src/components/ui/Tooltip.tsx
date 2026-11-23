@@ -13,7 +13,7 @@ export const TooltipContent = React.forwardRef<
     <TooltipPrimitive.Content
       ref={ref}
       sideOffset={sideOffset}
-      className={`z-50 overflow-hidden rounded-[6px] bg-ink px-2.5 py-1 text-ui-xs text-paper shadow-tooltip animate-layer-in ${className}`.trim()}
+      className={`z-50 overflow-hidden rounded-control bg-ink px-2.5 py-1 text-ui-xs text-paper shadow-tooltip animate-layer-in ${className}`.trim()}
       {...props}
     />
   </TooltipPrimitive.Portal>

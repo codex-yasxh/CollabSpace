@@ -43,6 +43,23 @@
   --radius-lg: 10px;
   --radius-full: 9999px;
 
+  /* Sizing and layout tokens */
+  --spacing-control-sm: 30px;
+  --spacing-control-md: 36px;
+  --spacing-avatar-sm: 24px;
+  --spacing-avatar-md: 28px;
+  --spacing-hairline: 1px;
+  --spacing-menu: 180px;
+  --spacing-auth: 360px;
+  --spacing-content: 880px;
+  --spacing-prose-doc: 75ch;
+
+  /* Avatar typography */
+  --text-avatar-sm: 10px;
+  --text-avatar-sm--line-height: 12px;
+  --text-avatar-md: 11px;
+  --text-avatar-md--line-height: 14px;
+
   /* UI & Document Type Scale */
   --text-ui-xs: 13px;
   --text-ui-xs--line-height: 18px;

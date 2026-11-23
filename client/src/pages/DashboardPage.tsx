@@ -75,7 +75,7 @@ export function DashboardPage() {
     }
     if (forcedState === "error") {
       setLoading(false);
-      setError("Failed to load documents.");
+      setError("Couldn't load your documents. Check your connection and try again.");
       return;
     }
 
@@ -84,7 +84,7 @@ export function DashboardPage() {
     try {
       const res = await fetch("/api/documents");
       if (!res.ok) {
-        throw new Error("Failed to load documents.");
+        throw new Error("Couldn't load your documents. Check your connection and try again.");
       }
       const data = (await res.json()) as { documents: DocumentItem[] };
       if (forcedState === "empty") {
@@ -93,7 +93,7 @@ export function DashboardPage() {
         setDocuments(data.documents);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load documents.");
+      setError(err instanceof Error ? err.message : "Couldn't load your documents. Check your connection and try again.");
     } finally {
       if (forcedState !== "loading") {
         setLoading(false);
@@ -113,11 +113,11 @@ export function DashboardPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title: "Untitled document" }),
       });
-      if (!res.ok) throw new Error("Failed to create document.");
+      if (!res.ok) throw new Error("Couldn't create document. Try again.");
       const data = (await res.json()) as { document: { id: string } };
       navigate(`/d/${data.document.id}`);
     } catch (err) {
-      showToast(err instanceof Error ? err.message : "Failed to create document.");
+      showToast(err instanceof Error ? err.message : "Couldn't create document. Try again.");
     } finally {
       setCreating(false);
     }
@@ -129,12 +129,12 @@ export function DashboardPage() {
       const res = await fetch(`/api/documents/${deleteDoc.id}`, {
         method: "DELETE",
       });
-      if (!res.ok) throw new Error("Failed to delete document.");
+      if (!res.ok) throw new Error("Couldn't delete document. Try again.");
       setDocuments((prev) => prev.filter((d) => d.id !== deleteDoc.id));
       setDeleteDoc(null);
       showToast("Document deleted");
     } catch (err) {
-      showToast(err instanceof Error ? err.message : "Failed to delete document.");
+      showToast(err instanceof Error ? err.message : "Couldn't delete document. Try again.");
     }
   };
 
@@ -148,7 +148,7 @@ export function DashboardPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title: newTitle.trim() }),
       });
-      if (!res.ok) throw new Error("Failed to rename document.");
+      if (!res.ok) throw new Error("Couldn't rename document. Try again.");
       const data = (await res.json()) as { document: DocumentItem };
       setDocuments((prev) =>
         prev.map((d) => (d.id === renameDoc.id ? { ...d, title: data.document.title } : d)),
@@ -156,7 +156,7 @@ export function DashboardPage() {
       setRenameDoc(null);
       showToast("Document renamed");
     } catch (err) {
-      showToast(err instanceof Error ? err.message : "Failed to rename document.");
+      showToast(err instanceof Error ? err.message : "Couldn't rename document. Try again.");
     } finally {
       setRenaming(false);
     }
@@ -179,7 +179,7 @@ export function DashboardPage() {
               <DropdownMenuTrigger asChild>
                 <button
                   type="button"
-                  className="flex items-center gap-2 px-2 py-1 rounded-[6px] hover:bg-wash transition-colors focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2 cursor-pointer"
+                  className="flex items-center gap-2 px-2 py-1 rounded-control hover:bg-wash transition-colors focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2 cursor-pointer"
                 >
                   <Avatar name={user.name} isCurrentUser size="sm" />
                   <span className="text-ui-sm font-medium text-ink">{user.name}</span>
@@ -209,7 +209,7 @@ export function DashboardPage() {
         </header>
 
         {/* Main Content Area (max-width 880px, centered) */}
-        <main className="w-full max-w-[880px] mx-auto px-6 py-10 flex-1 flex flex-col">
+        <main className="w-full max-w-content mx-auto px-6 py-10 flex-1 flex flex-col">
           {/* Header Row: Documents title & New document button */}
           <div className="flex items-center justify-between mb-6">
             <h1 className="text-ui-lg font-medium text-ink">Documents</h1>

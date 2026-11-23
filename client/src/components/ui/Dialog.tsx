@@ -28,7 +28,7 @@ export const DialogContent = React.forwardRef<
     <DialogOverlay />
     <DialogPrimitive.Content
       ref={ref}
-      className={`fixed left-[50%] top-[50%] z-50 w-full max-w-md translate-x-[-50%] translate-y-[-50%] bg-paper p-6 border border-line rounded-[10px] shadow-layer animate-dialog-in focus:outline-none ${className}`.trim()}
+      className={`fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 bg-paper p-6 border border-line rounded-layer shadow-layer animate-dialog-in focus:outline-none ${className}`.trim()}
       {...props}
     >
       {children}

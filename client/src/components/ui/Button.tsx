@@ -24,11 +24,11 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ref,
   ) => {
     const baseStyles =
-      "inline-flex items-center justify-center font-sans font-medium transition-colors select-none rounded-[6px] focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2 disabled:bg-wash disabled:text-ink-soft disabled:cursor-not-allowed cursor-pointer";
+      "inline-flex items-center justify-center font-sans font-medium transition-colors select-none rounded-control focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2 disabled:bg-wash disabled:text-ink-soft disabled:cursor-not-allowed cursor-pointer";
 
     const sizeStyles = {
-      sm: "h-[30px] px-2.5 text-ui-xs gap-1.5",
-      md: "h-[36px] px-3.5 text-ui-sm gap-2",
+      sm: "h-control-sm px-2.5 text-ui-xs gap-1.5",
+      md: "h-control-md px-3.5 text-ui-sm gap-2",
     }[size];
 
     const variantStyles = {

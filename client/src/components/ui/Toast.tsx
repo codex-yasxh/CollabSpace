@@ -10,7 +10,7 @@ export const ToastViewport = React.forwardRef<
 >(({ className = "", ...props }, ref) => (
   <ToastPrimitive.Viewport
     ref={ref}
-    className={`fixed bottom-4 right-4 z-50 flex max-h-screen w-full max-w-[360px] flex-col gap-2 p-4 outline-none ${className}`.trim()}
+    className={`fixed bottom-4 right-4 z-50 flex max-h-screen w-full max-w-auth flex-col gap-2 p-4 outline-none ${className}`.trim()}
     {...props}
   />
 ));
@@ -22,7 +22,7 @@ export const Toast = React.forwardRef<
 >(({ className = "", variant = "default", children, ...props }, ref) => (
   <ToastPrimitive.Root
     ref={ref}
-    className={`relative flex w-full items-start justify-between gap-3 overflow-hidden rounded-[10px] border p-3.5 shadow-layer animate-layer-in ${
+    className={`relative flex w-full items-start justify-between gap-3 overflow-hidden rounded-layer border p-3.5 shadow-layer animate-layer-in ${
       variant === "danger"
         ? "border-danger/30 bg-paper text-danger"
         : "border-line bg-paper text-ink"
@@ -32,7 +32,7 @@ export const Toast = React.forwardRef<
     <div className="flex flex-col gap-1 flex-1">{children}</div>
     <ToastPrimitive.Close
       aria-label="Close notification"
-      className="shrink-0 rounded-[4px] p-0.5 text-ink-soft hover:bg-wash focus-visible:outline-2 focus-visible:outline-focus cursor-pointer"
+      className="shrink-0 rounded-sm p-0.5 text-ink-soft hover:bg-wash focus-visible:outline-2 focus-visible:outline-focus cursor-pointer"
     >
       <X className="w-3.5 h-3.5" />
     </ToastPrimitive.Close>

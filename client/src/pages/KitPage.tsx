@@ -58,7 +58,7 @@ export function KitPage() {
   return (
     <ToastProvider swipeDirection="right">
       <div className="min-h-screen bg-fog text-ink font-sans p-6 sm:p-12">
-        <main className="max-w-[880px] mx-auto space-y-12">
+        <main className="max-w-content mx-auto space-y-12">
           {/* Header */}
           <header className="border-b border-line pb-6">
             <h1 className="text-ui-lg font-medium text-ink">Design system kit</h1>
@@ -70,7 +70,7 @@ export function KitPage() {
           {/* Typography */}
           <section className="space-y-4">
             <h2 className="text-ui-md font-medium text-ink">Typography</h2>
-            <div className="bg-paper p-6 rounded-[6px] border border-line space-y-6">
+            <div className="bg-paper p-6 rounded-control border border-line space-y-6">
               <div>
                 <p className="text-ui-xs text-ink-soft mb-1">UI font: Hanken Grotesk Variable</p>
                 <div className="space-y-2">
@@ -87,7 +87,7 @@ export function KitPage() {
                   <h1 className="text-doc-h1 font-semibold text-ink">Document Heading 1 (32px, semibold)</h1>
                   <h2 className="text-doc-h2 font-semibold text-ink">Document Heading 2 (24px, semibold)</h2>
                   <h3 className="text-doc-h3 font-semibold text-ink">Document Heading 3 (19px, semibold)</h3>
-                  <p className="text-doc-body text-ink max-w-[75ch]">
+                  <p className="text-doc-body text-ink max-w-prose-doc">
                     This is the document body text rendered in Source Serif 4. The measure is kept under 75 characters per line
                     with a 1.65 line height so that reading feels like physical paper rather than a software dashboard.
                   </p>
@@ -99,7 +99,7 @@ export function KitPage() {
           {/* Buttons */}
           <section className="space-y-4">
             <h2 className="text-ui-md font-medium text-ink">Button</h2>
-            <div className="bg-paper p-6 rounded-[6px] border border-line space-y-6">
+            <div className="bg-paper p-6 rounded-control border border-line space-y-6">
               <div className="space-y-2">
                 <p className="text-ui-xs text-ink-soft">Variants</p>
                 <div className="flex flex-wrap items-center gap-3">
@@ -136,7 +136,7 @@ export function KitPage() {
           {/* IconButton */}
           <section className="space-y-4">
             <h2 className="text-ui-md font-medium text-ink">IconButton</h2>
-            <div className="bg-paper p-6 rounded-[6px] border border-line space-y-4">
+            <div className="bg-paper p-6 rounded-control border border-line space-y-4">
               <p className="text-ui-xs text-ink-soft">Always requires an accessible label for screen readers</p>
               <div className="flex flex-wrap items-center gap-4">
                 <IconButton label="Add document" variant="secondary">
@@ -161,7 +161,7 @@ export function KitPage() {
           {/* TextInput */}
           <section className="space-y-4">
             <h2 className="text-ui-md font-medium text-ink">TextInput</h2>
-            <div className="bg-paper p-6 rounded-[6px] border border-line space-y-4">
+            <div className="bg-paper p-6 rounded-control border border-line space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <TextInput
                   label="Document title"
@@ -192,7 +192,7 @@ export function KitPage() {
           {/* DropdownMenu & Select */}
           <section className="space-y-4">
             <h2 className="text-ui-md font-medium text-ink">DropdownMenu and Select</h2>
-            <div className="bg-paper p-6 rounded-[6px] border border-line">
+            <div className="bg-paper p-6 rounded-control border border-line">
               <div className="flex flex-wrap items-center gap-6">
                 <div>
                   <p className="text-ui-xs text-ink-soft mb-2">Dropdown menu</p>
@@ -221,7 +221,7 @@ export function KitPage() {
                   </DropdownMenu>
                 </div>
 
-                <div className="w-[180px]">
+                <div className="w-menu">
                   <p className="text-ui-xs text-ink-soft mb-2">Select control</p>
                   <Select value={selectValue} onValueChange={setSelectValue}>
                     <SelectTrigger aria-label="Member role">
@@ -240,7 +240,7 @@ export function KitPage() {
           {/* Dialog */}
           <section className="space-y-4">
             <h2 className="text-ui-md font-medium text-ink">Dialog</h2>
-            <div className="bg-paper p-6 rounded-[6px] border border-line">
+            <div className="bg-paper p-6 rounded-control border border-line">
               <p className="text-ui-xs text-ink-soft mb-3">Traps focus, closes on Escape, 120ms transition, no backdrop blur</p>
               <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                 <DialogTrigger asChild>
@@ -269,7 +269,7 @@ export function KitPage() {
           {/* Tooltip */}
           <section className="space-y-4">
             <h2 className="text-ui-md font-medium text-ink">Tooltip</h2>
-            <div className="bg-paper p-6 rounded-[6px] border border-line">
+            <div className="bg-paper p-6 rounded-control border border-line">
               <div className="flex items-center gap-4">
                 <SimpleTooltip content="Aditya Sharma (aditya@example.com)">
                   <Button variant="secondary">Hover for collaborator info</Button>
@@ -285,7 +285,7 @@ export function KitPage() {
           {/* Avatar and AvatarStack */}
           <section id="avatar-section" className="space-y-4">
             <h2 className="text-ui-md font-medium text-ink">Presence: Avatar and AvatarStack</h2>
-            <div className="bg-paper p-6 rounded-[6px] border border-line space-y-6">
+            <div className="bg-paper p-6 rounded-control border border-line space-y-6">
               <div>
                 <p className="text-ui-xs text-ink-soft mb-2">Deterministic presence palette (all &gt;= 4.5:1 contrast against white)</p>
                 <div className="flex flex-wrap items-center gap-3">
@@ -332,7 +332,7 @@ export function KitPage() {
           {/* Toast */}
           <section className="space-y-4">
             <h2 className="text-ui-md font-medium text-ink">Toast</h2>
-            <div className="bg-paper p-6 rounded-[6px] border border-line">
+            <div className="bg-paper p-6 rounded-control border border-line">
               <div className="flex flex-wrap items-center gap-3">
                 <Button variant="secondary" onClick={() => setToastOpen(true)}>
                   Trigger success toast
@@ -357,7 +357,7 @@ export function KitPage() {
           {/* Spinner */}
           <section className="space-y-4">
             <h2 className="text-ui-md font-medium text-ink">Spinner</h2>
-            <div className="bg-paper p-6 rounded-[6px] border border-line">
+            <div className="bg-paper p-6 rounded-control border border-line">
               <p className="text-ui-xs text-ink-soft mb-3">Monochrome, non-shimmer spinner in sm, md, and lg sizes</p>
               <div className="flex items-center gap-6">
                 <div className="flex items-center gap-2">

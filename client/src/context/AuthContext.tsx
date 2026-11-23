@@ -51,7 +51,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     if (!res.ok) {
       const errData = (await res.json()) as { error?: { message?: string } };
-      throw new Error(errData.error?.message || "Failed to log in.");
+      throw new Error(errData.error?.message || "Couldn't sign in. Check your connection and try again.");
     }
 
     const data = (await res.json()) as { user: User };
@@ -67,7 +67,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     if (!res.ok) {
       const errData = (await res.json()) as { error?: { message?: string } };
-      throw new Error(errData.error?.message || "Failed to register.");
+      throw new Error(errData.error?.message || "Couldn't create your account. Check your connection and try again.");
     }
 
     const data = (await res.json()) as { user: User };

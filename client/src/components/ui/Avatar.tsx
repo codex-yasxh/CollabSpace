@@ -50,7 +50,7 @@ export const Avatar = React.forwardRef<
       magenta: "bg-magenta",
     }[resolvedColor];
 
-    const sizeClass = size === "sm" ? "w-[24px] h-[24px] text-[10px]" : "w-[28px] h-[28px] text-[11px]";
+    const sizeClass = size === "sm" ? "w-avatar-sm h-avatar-sm text-avatar-sm" : "w-avatar-md h-avatar-md text-avatar-md";
     const ringClass = isCurrentUser ? "ring-2 ring-ink" : "ring-2 ring-fog";
 
     return (

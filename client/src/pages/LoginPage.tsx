@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.js";
 import { Button, TextInput } from "../components/ui/index.js";
+import { sanitizeRedirectUrl } from "../lib/urlUtils.js";
 
 export function LoginPage() {
   const [email, setEmail] = useState("");
@@ -20,13 +21,13 @@ export function LoginPage() {
 
     try {
       await login(email, password);
-      const next = searchParams.get("next") || "/";
+      const next = sanitizeRedirectUrl(searchParams.get("next"));
       navigate(next, { replace: true });
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message);
       } else {
-        setError("An unexpected error occurred.");
+        setError("Couldn't sign in. Check your connection and try again.");
       }
     } finally {
       setLoading(false);
@@ -35,7 +36,7 @@ export function LoginPage() {
 
   return (
     <div className="min-h-screen bg-fog flex flex-col justify-center items-center px-4 py-12">
-      <div className="w-full max-w-[360px] flex flex-col gap-6">
+      <div className="w-full max-w-auth flex flex-col gap-6">
         {/* Wordmark */}
         <div className="text-center">
           <Link to="/" className="text-ui-lg font-serif font-semibold text-ink tracking-tight focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2">
@@ -44,7 +45,7 @@ export function LoginPage() {
         </div>
 
         {/* Form Container */}
-        <div className="bg-paper border border-line rounded-[6px] p-6">
+        <div className="bg-paper border border-line rounded-control p-6">
           <h1 className="text-ui-md font-medium text-ink mb-4">Log in</h1>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">

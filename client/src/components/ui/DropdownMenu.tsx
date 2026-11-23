@@ -16,7 +16,7 @@ export const DropdownMenuContent = React.forwardRef<
     <DropdownMenuPrimitive.Content
       ref={ref}
       sideOffset={sideOffset}
-      className={`z-50 min-w-[180px] bg-paper p-1 border border-line rounded-[10px] shadow-layer animate-layer-in focus:outline-none ${className}`.trim()}
+      className={`z-50 min-w-menu bg-paper p-1 border border-line rounded-layer shadow-layer animate-layer-in focus:outline-none ${className}`.trim()}
       {...props}
     />
   </DropdownMenuPrimitive.Portal>
@@ -29,11 +29,11 @@ export const DropdownMenuItem = React.forwardRef<
 >(({ className = "", destructive = false, ...props }, ref) => (
   <DropdownMenuPrimitive.Item
     ref={ref}
-    className={`relative flex items-center gap-2 px-2.5 py-1.5 text-ui-sm rounded-[6px] outline-none select-none cursor-pointer transition-colors ${
+    className={`relative flex items-center gap-2 px-2.5 py-1.5 text-ui-sm rounded-control outline-none select-none cursor-pointer transition-colors ${
       destructive
-        ? "text-danger data-[highlighted]:bg-danger/10"
-        : "text-ink data-[highlighted]:bg-wash"
-    } data-[disabled]:opacity-40 data-[disabled]:cursor-not-allowed ${className}`.trim()}
+        ? "text-danger data-highlighted:bg-danger/10"
+        : "text-ink data-highlighted:bg-wash"
+    } data-disabled:opacity-40 data-disabled:cursor-not-allowed ${className}`.trim()}
     {...props}
   />
 ));
@@ -45,7 +45,7 @@ export const DropdownMenuSeparator = React.forwardRef<
 >(({ className = "", ...props }, ref) => (
   <DropdownMenuPrimitive.Separator
     ref={ref}
-    className={`-mx-1 my-1 h-[1px] bg-line ${className}`.trim()}
+    className={`-mx-1 my-1 h-hairline bg-line ${className}`.trim()}
     {...props}
   />
 ));

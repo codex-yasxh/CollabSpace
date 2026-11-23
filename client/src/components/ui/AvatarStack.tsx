@@ -55,7 +55,8 @@ export function AvatarStack({ users, max = 4, className = "" }: AvatarStackProps
           side="bottom"
         >
           <div
-            className="relative inline-flex items-center justify-center shrink-0 w-[28px] h-[28px] rounded-full ring-2 ring-fog bg-wash text-ink-soft text-ui-xs font-medium select-none z-[5]"
+            className="relative inline-flex items-center justify-center shrink-0 w-avatar-md h-avatar-md rounded-full ring-2 ring-fog bg-wash text-ink-soft text-ui-xs font-medium select-none"
+            style={{ zIndex: 10 }}
             aria-label={`${overflowCount} more collaborator${overflowCount > 1 ? "s" : ""}`}
           >
             +{overflowCount}
