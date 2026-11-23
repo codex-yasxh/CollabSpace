@@ -8,7 +8,7 @@
     "dev": "tsx watch src/index.ts",
     "test": "vitest run",
     "migrate": "tsx src/database/migrate.ts",
-    "seed": "echo \"seed pending T7.5\""
+    "seed": "tsx src/database/seed.ts"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
