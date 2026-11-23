@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Link, useParams } from "react-router-dom";
+import { KitPage } from "./pages/KitPage.js";
 
 function HomePage() {
   const [healthStatus, setHealthStatus] = useState<string>("Loading health check...");
@@ -47,9 +48,11 @@ export function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/_kit" element={<KitPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/d/:id" element={<DocumentPage />} />
+        <Route path="/_kit" element={<KitPage />} />
       </Routes>
     </BrowserRouter>
   );
