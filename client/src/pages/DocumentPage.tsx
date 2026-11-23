@@ -1,0 +1,341 @@
+import { useState, useEffect, useCallback } from "react";
+import { useParams, Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useAuth } from "../context/AuthContext.js";
+import {
+  Button,
+  Spinner,
+  ToastProvider,
+  Toast,
+  ToastTitle,
+  ToastDescription,
+  ToastViewport,
+  Avatar,
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "../components/ui/index.js";
+import { ShareDialog, type MemberItem } from "../components/ShareDialog.js";
+import { Users, ChevronDown, ArrowLeft } from "lucide-react";
+
+interface DocumentDetail {
+  id: string;
+  title: string;
+  owner_id: string;
+  link_access: "NONE" | "VIEWER" | "EDITOR";
+  role: "OWNER" | "EDITOR" | "VIEWER";
+  created_at: string;
+  updated_at: string;
+}
+
+export function DocumentPage() {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { user, logout } = useAuth();
+
+  const forcedState = searchParams.get("state"); // e.g. "no-access" | "not-found"
+  const forcedDialog = searchParams.get("dialog"); // e.g. "share-owner" | "share-viewer"
+
+  const [document, setDocument] = useState<DocumentDetail | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [statusCode, setStatusCode] = useState<number | null>(null);
+
+  // Share Dialog state
+  const [shareOpen, setShareOpen] = useState<boolean>(
+    forcedDialog === "share-owner" || forcedDialog === "share-viewer",
+  );
+
+  // Toast state
+  const [toastOpen, setToastOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState({ title: "", description: "" });
+
+  const showToast = (title: string, description: string = "") => {
+    setToastMessage({ title, description });
+    setToastOpen(false);
+    setTimeout(() => setToastOpen(true), 50);
+  };
+
+  const fetchDocument = useCallback(async () => {
+    if (forcedState === "no-access") {
+      setStatusCode(403);
+      setLoading(false);
+      return;
+    }
+    if (forcedState === "not-found") {
+      setStatusCode(404);
+      setLoading(false);
+      return;
+    }
+    if (forcedDialog) {
+      setDocument({
+        id: id || "preview-doc-1",
+        title: "Project report draft",
+        owner_id: "owner-1",
+        link_access: "NONE",
+        role: forcedDialog === "share-viewer" ? "VIEWER" : "OWNER",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+      setStatusCode(200);
+      setShareOpen(true);
+      setLoading(false);
+      return;
+    }
+
+    if (!id) return;
+    setLoading(true);
+    setStatusCode(null);
+
+    try {
+      const res = await fetch(`/api/documents/${id}`);
+      setStatusCode(res.status);
+
+      if (res.ok) {
+        const data = (await res.json()) as { document: DocumentDetail };
+        setDocument(data.document);
+      }
+    } catch {
+      setStatusCode(500);
+    } finally {
+      setLoading(false);
+    }
+  }, [id, forcedState]);
+
+  useEffect(() => {
+    void fetchDocument();
+  }, [fetchDocument]);
+
+  // Loading State
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-fog flex items-center justify-center">
+        <Spinner size="md" />
+      </div>
+    );
+  }
+
+  // 403 Forbidden / No Access Screen per blueprint section 4.9
+  if (statusCode === 403 || forcedState === "no-access") {
+    const userEmail = user?.email || "aditya@x.com";
+    return (
+      <div className="min-h-screen bg-fog flex flex-col justify-center items-center px-4 py-12">
+        <div className="w-full max-w-auth bg-paper border border-line rounded-control p-6 flex flex-col gap-4 text-center">
+          <div className="text-center mb-1">
+            <Link
+              to="/"
+              className="text-ui-md font-serif font-semibold text-ink tracking-tight focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2"
+            >
+              CollabSpace
+            </Link>
+          </div>
+
+          <h1 className="text-ui-md font-medium text-ink">No access</h1>
+          <p className="text-ui-sm text-ink-soft">
+            You don't have access to this document. Ask the owner to share it with{" "}
+            <span className="font-medium text-ink">{userEmail}</span>.
+          </p>
+
+          <div className="pt-2">
+            <Button
+              variant="secondary"
+              className="w-full"
+              onClick={() => navigate("/")}
+            >
+              Back to documents
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 404 Not Found Screen
+  if (statusCode === 404 || forcedState === "not-found" || !document) {
+    return (
+      <div className="min-h-screen bg-fog flex flex-col justify-center items-center px-4 py-12">
+        <div className="w-full max-w-auth bg-paper border border-line rounded-control p-6 flex flex-col gap-4 text-center">
+          <div className="text-center mb-1">
+            <Link
+              to="/"
+              className="text-ui-md font-serif font-semibold text-ink tracking-tight focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2"
+            >
+              CollabSpace
+            </Link>
+          </div>
+
+          <h1 className="text-ui-md font-medium text-ink">Document not found</h1>
+          <p className="text-ui-sm text-ink-soft">
+            This document doesn't exist or was deleted.
+          </p>
+
+          <div className="pt-2">
+            <Button
+              variant="secondary"
+              className="w-full"
+              onClick={() => navigate("/")}
+            >
+              Back to documents
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Mock members for preview / screenshots when requested via forcedDialog
+  const previewMembers: MemberItem[] | undefined =
+    forcedDialog === "share-viewer"
+      ? [
+          {
+            id: "owner-1",
+            name: "Alice Chen",
+            email: "alice@collabspace.dev",
+            role: "OWNER",
+          },
+          {
+            id: user?.id || "viewer-1",
+            name: user?.name || "Carol Viewer",
+            email: user?.email || "carol@collabspace.dev",
+            role: "VIEWER",
+          },
+        ]
+      : forcedDialog === "share-owner"
+        ? [
+            {
+              id: user?.id || "owner-1",
+              name: user?.name || "Alice Owner",
+              email: user?.email || "alice@collabspace.dev",
+              role: "OWNER",
+            },
+            {
+              id: "editor-1",
+              name: "Bob Editor",
+              email: "bob@collabspace.dev",
+              role: "EDITOR",
+            },
+            {
+              id: "viewer-1",
+              name: "Carol Viewer",
+              email: "carol@collabspace.dev",
+              role: "VIEWER",
+            },
+          ]
+        : undefined;
+
+  const effectiveRole =
+    forcedDialog === "share-viewer" ? "VIEWER" : document.role;
+
+  return (
+    <ToastProvider swipeDirection="right">
+      <div className="min-h-screen bg-fog text-ink font-sans flex flex-col">
+        {/* Header Bar */}
+        <header className="w-full px-6 py-3 flex items-center justify-between border-b border-line bg-fog">
+          <div className="flex items-center gap-3">
+            <Link
+              to="/"
+              className="flex items-center gap-1.5 text-ui-sm font-medium text-ink-soft hover:text-ink transition-colors focus-visible:outline-2 focus-visible:outline-focus"
+              aria-label="Back to documents"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span className="font-serif font-semibold text-ink">CollabSpace</span>
+            </Link>
+
+            <span className="text-ink-soft text-ui-sm">/</span>
+
+            <span className="text-ui-sm font-medium text-ink truncate max-w-xs">
+              {document.title}
+            </span>
+
+            {/* Plain text role label (blueprint rule: role as plain text only, no decorative pill) */}
+            <span className="text-ui-xs text-ink-soft capitalize">
+              ({effectiveRole.toLowerCase()})
+            </span>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => setShareOpen(true)}
+              className="gap-1.5"
+            >
+              <Users className="w-3.5 h-3.5" />
+              Share
+            </Button>
+
+            {user && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    className="flex items-center gap-2 px-1.5 py-1 rounded-control hover:bg-wash transition-colors focus-visible:outline-2 focus-visible:outline-focus cursor-pointer"
+                  >
+                    <Avatar name={user.name} isCurrentUser size="sm" />
+                    <ChevronDown className="w-3.5 h-3.5 text-ink-soft" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <div className="px-2.5 py-1.5 text-ui-xs text-ink-soft border-b border-line mb-1">
+                    Signed in as <span className="font-medium text-ink">{user.email}</span>
+                  </div>
+                  <DropdownMenuItem onSelect={() => navigate("/")}>
+                    All documents
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    destructive
+                    onSelect={async () => {
+                      await logout();
+                      navigate("/login");
+                    }}
+                  >
+                    Log out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+          </div>
+        </header>
+
+        {/* Document Editor Placeholder Area (Canvas) */}
+        <main className="flex-1 w-full max-w-content mx-auto px-6 py-8 flex flex-col items-center">
+          <div className="w-full bg-paper border border-line rounded-page shadow-page min-h-96 p-12 flex flex-col">
+            <h1 className="text-doc-h1 font-serif font-bold text-ink mb-6">
+              {document.title}
+            </h1>
+            <p className="text-doc-body font-serif text-ink-soft">
+              This is the document workspace placeholder. The real-time collaborative
+              editor will be connected here in Milestone 6.
+            </p>
+          </div>
+        </main>
+
+        {/* Share Dialog */}
+        <ShareDialog
+          open={shareOpen}
+          onOpenChange={setShareOpen}
+          documentId={document.id}
+          documentTitle={document.title}
+          userRole={effectiveRole}
+          initialLinkAccess={document.link_access}
+          onLinkAccessChange={(newAccess) => {
+            setDocument((prev) => (prev ? { ...prev, link_access: newAccess } : prev));
+          }}
+          showToast={showToast}
+          initialMembers={previewMembers}
+        />
+
+        {/* Toasts */}
+        <Toast open={toastOpen} onOpenChange={setToastOpen}>
+          <ToastTitle>{toastMessage.title}</ToastTitle>
+          {toastMessage.description && (
+            <ToastDescription>{toastMessage.description}</ToastDescription>
+          )}
+        </Toast>
+        <ToastViewport />
+      </div>
+    </ToastProvider>
+  );
+}

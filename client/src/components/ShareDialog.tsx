@@ -38,7 +38,7 @@ export interface ShareDialogProps {
   onLinkAccessChange?: (newAccess: "NONE" | "VIEWER" | "EDITOR") => void;
   showToast: (title: string, description?: string) => void;
   // Optional pre-seeded members for testing or screenshots
-  initialMembers?: MemberItem[];
+  initialMembers?: MemberItem[] | undefined;
 }
 
 export function ShareDialog({
@@ -85,12 +85,15 @@ export function ShareDialog({
 
   useEffect(() => {
     if (open) {
+      if (initialMembers) {
+        setMembers(initialMembers);
+      }
       setLinkAccess(initialLinkAccess);
       setInviteError(null);
       setInviteEmail("");
       void fetchMembers();
     }
-  }, [open, initialLinkAccess, fetchMembers]);
+  }, [open, initialLinkAccess, fetchMembers, initialMembers]);
 
   // Handle inviting a collaborator
   const handleInvite = async (e: React.FormEvent) => {
@@ -232,8 +235,8 @@ export function ShareDialog({
           {/* 1. Add Collaborators Form (Owner only) */}
           {isOwner && (
             <form onSubmit={handleInvite} className="flex flex-col gap-2">
-              <div className="flex items-start gap-2">
-                <div className="flex-1">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-start gap-2">
+                <div className="flex-1 min-w-0">
                   <TextInput
                     type="email"
                     placeholder="name@example.com"
@@ -247,29 +250,31 @@ export function ShareDialog({
                     aria-label="Collaborator email"
                   />
                 </div>
-                <div className="w-32 shrink-0">
-                  <Select
-                    value={inviteRole}
-                    onValueChange={(val) => setInviteRole(val as "EDITOR" | "VIEWER")}
-                    disabled={inviting}
+                <div className="flex items-center gap-2 shrink-0">
+                  <div className="w-28 sm:w-32 shrink-0">
+                    <Select
+                      value={inviteRole}
+                      onValueChange={(val) => setInviteRole(val as "EDITOR" | "VIEWER")}
+                      disabled={inviting}
+                    >
+                      <SelectTrigger aria-label="Invite role">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="EDITOR">Editor</SelectItem>
+                        <SelectItem value="VIEWER">Viewer</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    loading={inviting}
+                    disabled={!inviteEmail.trim()}
                   >
-                    <SelectTrigger aria-label="Invite role">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="EDITOR">Editor</SelectItem>
-                      <SelectItem value="VIEWER">Viewer</SelectItem>
-                    </SelectContent>
-                  </Select>
+                    Invite
+                  </Button>
                 </div>
-                <Button
-                  type="submit"
-                  variant="primary"
-                  loading={inviting}
-                  disabled={!inviteEmail.trim()}
-                >
-                  Invite
-                </Button>
               </div>
             </form>
           )}

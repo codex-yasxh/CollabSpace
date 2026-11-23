@@ -1,15 +1,11 @@
-import { BrowserRouter, Routes, Route, useParams } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext.js";
 import { ProtectedRoute } from "./components/ProtectedRoute.js";
 import { LoginPage } from "./pages/LoginPage.js";
 import { RegisterPage } from "./pages/RegisterPage.js";
 import { DashboardPage } from "./pages/DashboardPage.js";
+import { DocumentPage } from "./pages/DocumentPage.js";
 import { KitPage } from "./pages/KitPage.js";
-
-function DocumentPage() {
-  const { id } = useParams<{ id: string }>();
-  return <div className="p-8 text-ui-md text-ink">Document Page Placeholder: {id}</div>;
-}
 
 export function App() {
   return (
