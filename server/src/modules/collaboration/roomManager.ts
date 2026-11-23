@@ -84,6 +84,25 @@ export class RoomManager {
   }
 
   /**
+   * Flushes all active dirty rooms to database (e.g. on SIGTERM/SIGINT shutdown).
+   */
+  async flushAllRooms(): Promise<void> {
+    const promises = Array.from(this.rooms.values());
+    await Promise.allSettled(
+      promises.map(async (p) => {
+        try {
+          const room = await p;
+          if (room.dirty) {
+            await room.flush();
+          }
+        } catch {
+          // ignore
+        }
+      }),
+    );
+  }
+
+  /**
    * Resets all rooms (for testing or shutdown).
    */
   async reset(): Promise<void> {
