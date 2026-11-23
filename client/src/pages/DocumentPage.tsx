@@ -217,6 +217,15 @@ export function DocumentPage() {
     void fetchDocument();
   }, [fetchDocument]);
 
+  const effectiveRole =
+    forcedRole === "viewer" || forcedDialog === "share-viewer"
+      ? "VIEWER"
+      : document?.role || "VIEWER";
+  const isViewer = effectiveRole === "VIEWER";
+  const session = useCollabSession(document?.id);
+  const activeCollaborators = useActiveCollaborators(session?.provider, user?.id);
+  const saveStatus = useSaveStatus(session?.provider);
+
   // Loading State
   if (loading) {
     return (
@@ -333,15 +342,6 @@ export function DocumentPage() {
             },
           ]
         : undefined;
-
-  const effectiveRole =
-    forcedRole === "viewer" || forcedDialog === "share-viewer"
-      ? "VIEWER"
-      : document.role;
-  const isViewer = effectiveRole === "VIEWER";
-  const session = useCollabSession(document.id);
-  const activeCollaborators = useActiveCollaborators(session?.provider, user?.id);
-  const saveStatus = useSaveStatus(session?.provider);
 
   return (
     <ToastProvider swipeDirection="right">
