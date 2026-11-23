@@ -10,6 +10,17 @@ export interface AvatarProps extends React.ComponentPropsWithoutRef<typeof Avata
   size?: ("sm" | "md") | undefined;
 }
 
+export function resolveAvatarColor(options: {
+  userId?: string | undefined;
+  name?: string | undefined;
+  presenceColor?: PresenceColor | undefined;
+}): PresenceColor {
+  if (options.presenceColor) return options.presenceColor;
+  if (options.userId) return getPresenceColor(options.userId).name;
+  if (options.name) return getPresenceColor(options.name).name;
+  return "coral";
+}
+
 export function getInitials(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);
   if (parts.length === 0) return "?";
@@ -33,12 +44,8 @@ export const Avatar = React.forwardRef<
     },
     ref,
   ) => {
-    // Resolve presence color deterministically if not explicitly provided
-    const resolvedColor = presenceColor
-      ? presenceColor
-      : userId
-        ? getPresenceColor(userId).name
-        : getPresenceColor(name).name;
+    // Resolve presence color deterministically keyed by userId per blueprint 4.3
+    const resolvedColor = resolveAvatarColor({ userId, name, presenceColor });
 
     const bgClass = {
       coral: "bg-coral",

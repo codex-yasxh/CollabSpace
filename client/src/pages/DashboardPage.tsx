@@ -181,7 +181,7 @@ export function DashboardPage() {
                   type="button"
                   className="flex items-center gap-2 px-2 py-1 rounded-control hover:bg-wash transition-colors focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2 cursor-pointer"
                 >
-                  <Avatar name={user.name} isCurrentUser size="sm" />
+                  <Avatar name={user.name} userId={user.id} isCurrentUser size="sm" />
                   <span className="text-ui-sm font-medium text-ink">{user.name}</span>
                   <ChevronDown className="w-3.5 h-3.5 text-ink-soft" />
                 </button>
