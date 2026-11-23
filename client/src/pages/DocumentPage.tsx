@@ -2,7 +2,9 @@ import { useState, useEffect, useCallback } from "react";
 import { useParams, Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
+import Collaboration from "@tiptap/extension-collaboration";
 import { useAuth } from "../context/AuthContext.js";
+import { useCollabSession, type CollabSession } from "../hooks/useCollabSession.js";
 import {
   Button,
   Spinner,
@@ -30,6 +32,47 @@ interface DocumentDetail {
   role: "OWNER" | "EDITOR" | "VIEWER";
   created_at: string;
   updated_at: string;
+}
+
+interface CollabEditorAreaProps {
+  session: CollabSession;
+  isViewer: boolean;
+}
+
+function CollabEditorArea({ session, isViewer }: CollabEditorAreaProps) {
+  const editor = useEditor(
+    {
+      editable: !isViewer,
+      extensions: [
+        StarterKit.configure({
+          undoRedo: false, // Wire history to Collaboration extension
+          link: {
+            openOnClick: false,
+            protocols: ["http", "https", "mailto"],
+            HTMLAttributes: {
+              rel: "noopener noreferrer nofollow",
+            },
+          },
+        }),
+        Collaboration.configure({
+          document: session.ydoc,
+        }),
+      ],
+      // NEVER pass content option to useEditor per skills.md 6.2
+    },
+    [session],
+  );
+
+  return (
+    <>
+      <EditorToolbar editor={editor} disabled={isViewer} />
+      <main className="flex-1 w-full bg-fog py-8 px-4 flex justify-center overflow-y-auto">
+        <div className="w-full max-w-paper bg-paper border border-line rounded-page shadow-page p-18 max-md:p-5 max-md:max-w-none">
+          <EditorContent editor={editor} />
+        </div>
+      </main>
+    </>
+  );
 }
 
 export function DocumentPage() {
@@ -230,22 +273,7 @@ export function DocumentPage() {
   const effectiveRole =
     forcedDialog === "share-viewer" ? "VIEWER" : document.role;
   const isViewer = effectiveRole === "VIEWER";
-
-  const editor = useEditor({
-    editable: !isViewer,
-    extensions: [
-      StarterKit.configure({
-        link: {
-          openOnClick: false,
-          protocols: ["http", "https", "mailto"],
-          HTMLAttributes: {
-            rel: "noopener noreferrer nofollow",
-          },
-        },
-      }),
-    ],
-    content: `<h1>${document.title}</h1><p>Start writing your document here...</p>`,
-  });
+  const session = useCollabSession(document.id);
 
   return (
     <ToastProvider swipeDirection="right">
@@ -319,15 +347,16 @@ export function DocumentPage() {
           </div>
         </header>
 
-        {/* Sticky flat Toolbar */}
-        <EditorToolbar editor={editor} disabled={isViewer} />
-
-        {/* Document Editor Canvas */}
-        <main className="flex-1 w-full bg-fog py-8 px-4 flex justify-center overflow-y-auto">
-          <div className="w-full max-w-paper bg-paper border border-line rounded-page shadow-page p-18 max-md:p-5 max-md:max-w-none">
-            <EditorContent editor={editor} />
+        {/* Collab Editor Canvas */}
+        {!session ? (
+          <div className="flex-1 w-full bg-fog py-8 px-4 flex justify-center items-center">
+            <div className="w-full max-w-paper bg-paper border border-line rounded-page shadow-page p-18 flex items-center justify-center min-h-96">
+              <Spinner size="md" />
+            </div>
           </div>
-        </main>
+        ) : (
+          <CollabEditorArea session={session} isViewer={isViewer} />
+        )}
 
         {/* Share Dialog */}
         <ShareDialog
