@@ -15,17 +15,18 @@ async function run() {
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
   });
 
-  const page = await browser.newPage();
-
-  // 1. Register a dedicated dashboard user
   const email = `dash_user_${Date.now()}@example.com`;
-  console.log("Registering user:", email);
-  await page.goto("http://localhost:5173/register", { waitUntil: "networkidle0" });
-  await page.type("input[type='text']", "Aditya Sharma");
-  await page.type("input[type='email']", email);
-  await page.type("input[type='password']", "password123");
-  await page.click("button[type='submit']");
-  await page.waitForNavigation({ waitUntil: "networkidle0" });
+  try {
+    const page = await browser.newPage();
+
+    // 1. Register a dedicated dashboard user
+    console.log("Registering user:", email);
+    await page.goto("http://localhost:5173/register", { waitUntil: "networkidle0" });
+    await page.type("input[type='text']", "Aditya Sharma");
+    await page.type("input[type='email']", email);
+    await page.type("input[type='password']", "password123");
+    await page.click("button[type='submit']");
+    await page.waitForNavigation({ waitUntil: "networkidle0" });
 
   // 2. Empty Dashboard Screenshot
   console.log("Capturing Empty dashboard...");
@@ -95,7 +96,22 @@ async function run() {
   await page.evaluate(() => document.fonts.ready);
   await page.screenshot({ path: path.join(outDir, "dashboard-5rows-390x844.png") });
 
-  await browser.close();
+  } finally {
+    await browser.close();
+    // Clean up test user so dev database remains completely unpolluted
+    try {
+      const { default: pg } = await import("pg");
+      const client = new pg.Client({
+        connectionString: process.env.DATABASE_URL || "postgresql://collabspace:collabspace_dev@localhost:5432/collabspace",
+      });
+      await client.connect();
+      await client.query("DELETE FROM users WHERE email = $1", [email]);
+      await client.end();
+      console.log("Cleaned up test user from dev database:", email);
+    } catch (cleanupErr) {
+      console.error("Cleanup error:", cleanupErr);
+    }
+  }
   console.log("All dashboard screenshots captured successfully.");
 }
 

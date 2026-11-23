@@ -15,17 +15,18 @@ async function run() {
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
   });
 
-  const page = await browser.newPage();
-
-  // Register an authenticated user
   const email = `m4_user_${Date.now()}@example.com`;
-  console.log("Registering user:", email);
-  await page.goto("http://localhost:5173/register", { waitUntil: "networkidle0" });
-  await page.type("input[type='text']", "Aditya Sharma");
-  await page.type("input[type='email']", email);
-  await page.type("input[type='password']", "password123");
-  await page.click("button[type='submit']");
-  await page.waitForNavigation({ waitUntil: "networkidle0" });
+  try {
+    const page = await browser.newPage();
+
+    // Register an authenticated user
+    console.log("Registering user:", email);
+    await page.goto("http://localhost:5173/register", { waitUntil: "networkidle0" });
+    await page.type("input[type='text']", "Aditya Sharma");
+    await page.type("input[type='email']", email);
+    await page.type("input[type='password']", "password123");
+    await page.click("button[type='submit']");
+    await page.waitForNavigation({ waitUntil: "networkidle0" });
 
   // 1. Capture Share Dialog (Owner View)
   console.log("Capturing Share dialog (Owner view)...");
@@ -69,7 +70,22 @@ async function run() {
   await new Promise((r) => setTimeout(r, 300));
   await page.screenshot({ path: path.join(outDir, "no-access-390x844.png") });
 
-  await browser.close();
+  } finally {
+    await browser.close();
+    // Clean up test user so dev database remains completely unpolluted
+    try {
+      const { default: pg } = await import("pg");
+      const client = new pg.Client({
+        connectionString: process.env.DATABASE_URL || "postgresql://collabspace:collabspace_dev@localhost:5432/collabspace",
+      });
+      await client.connect();
+      await client.query("DELETE FROM users WHERE email = $1", [email]);
+      await client.end();
+      console.log("Cleaned up test user from dev database:", email);
+    } catch (cleanupErr) {
+      console.error("Cleanup error:", cleanupErr);
+    }
+  }
   console.log("All M4 screenshots captured successfully!");
 }
 

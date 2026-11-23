@@ -15,17 +15,19 @@ async function run() {
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
   });
 
-  const page = await browser.newPage();
+  const testEmail = `auth_test_${Date.now()}@example.com`;
+  try {
+    const page = await browser.newPage();
 
-  // Test 1: Redirect from /d/test-doc-123 to /login?next=%2Fd%2Ftest-doc-123
-  console.log("Navigating to /d/test-doc-123 while logged out...");
-  await page.goto("http://localhost:5173/d/test-doc-123", { waitUntil: "networkidle0" });
-  const currentUrl = page.url();
-  console.log("Current URL after redirect:", currentUrl);
-  if (!currentUrl.includes("/login?next=%2Fd%2Ftest-doc-123")) {
-    throw new Error(`Expected redirect to /login?next=%2Fd%2Ftest-doc-123, but got ${currentUrl}`);
-  }
-  console.log("Verified: /d/:id redirects to /login?next= correctly!");
+    // Test 1: Redirect from /d/test-doc-123 to /login?next=%2Fd%2Ftest-doc-123
+    console.log("Navigating to /d/test-doc-123 while logged out...");
+    await page.goto("http://localhost:5173/d/test-doc-123", { waitUntil: "networkidle0" });
+    const currentUrl = page.url();
+    console.log("Current URL after redirect:", currentUrl);
+    if (!currentUrl.includes("/login?next=%2Fd%2Ftest-doc-123")) {
+      throw new Error(`Expected redirect to /login?next=%2Fd%2Ftest-doc-123, but got ${currentUrl}`);
+    }
+    console.log("Verified: /d/:id redirects to /login?next= correctly!");
 
   // Screenshot Login at 1440x900
   await page.setViewport({ width: 1440, height: 900 });
@@ -89,7 +91,22 @@ async function run() {
   }
   console.log("Verified: login from /d/my-doc-target lands back on /d/my-doc-target!");
 
-  await browser.close();
+  } finally {
+    await browser.close();
+    // Clean up test user so dev database remains completely unpolluted
+    try {
+      const { default: pg } = await import("pg");
+      const client = new pg.Client({
+        connectionString: process.env.DATABASE_URL || "postgresql://collabspace:collabspace_dev@localhost:5432/collabspace",
+      });
+      await client.connect();
+      await client.query("DELETE FROM users WHERE email = $1", [testEmail]);
+      await client.end();
+      console.log("Cleaned up test user from dev database:", testEmail);
+    } catch (cleanupErr) {
+      console.error("Cleanup error:", cleanupErr);
+    }
+  }
   console.log("All auth screen tests and screenshots completed successfully.");
 }
 

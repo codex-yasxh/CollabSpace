@@ -396,8 +396,8 @@ export function ShareDialog({
                   </Select>
                 </div>
               ) : (
-                <span className="text-ui-sm text-ink-soft capitalize px-2 py-1">
-                  {linkAccess === "NONE" ? "No access" : linkAccess.toLowerCase()}
+                <span className="text-ui-sm text-ink-soft whitespace-nowrap shrink-0 px-2 py-1">
+                  {linkAccess === "NONE" ? "No access" : linkAccess === "VIEWER" ? "Viewer" : "Editor"}
                 </span>
               )}
             </div>
