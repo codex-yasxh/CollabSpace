@@ -1,5 +1,9 @@
 import { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Link, useParams } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext.js";
+import { ProtectedRoute } from "./components/ProtectedRoute.js";
+import { LoginPage } from "./pages/LoginPage.js";
+import { RegisterPage } from "./pages/RegisterPage.js";
 import { KitPage } from "./pages/KitPage.js";
 
 function HomePage() {
@@ -17,44 +21,47 @@ function HomePage() {
   }, []);
 
   return (
-    <div>
-      <h1>CollabSpace Home</h1>
-      <nav>
-        <Link to="/login">Login</Link> | <Link to="/register">Register</Link> | <Link to="/d/demo-doc">Demo Doc</Link>
+    <div className="p-8">
+      <h1 className="text-ui-lg font-medium text-ink">CollabSpace</h1>
+      <nav className="my-4 flex gap-4 text-ui-sm">
+        <Link to="/login" className="text-ink underline">Login</Link>
+        <Link to="/register" className="text-ink underline">Register</Link>
+        <Link to="/d/demo-doc" className="text-ink underline">Demo Doc (Protected)</Link>
+        <Link to="/_kit" className="text-ink underline">Design Kit</Link>
       </nav>
-      <div>
-        <h2>Health check response:</h2>
-        <pre id="health-output">{healthStatus}</pre>
+      <div className="mt-6">
+        <h2 className="text-ui-md font-medium text-ink">Health check response:</h2>
+        <pre id="health-output" className="text-ui-sm text-ink-soft mt-2">{healthStatus}</pre>
       </div>
     </div>
   );
 }
 
-function LoginPage() {
-  return <div>Login Page Placeholder</div>;
-}
-
-function RegisterPage() {
-  return <div>Register Page Placeholder</div>;
-}
-
 function DocumentPage() {
   const { id } = useParams<{ id: string }>();
-  return <div>Document Page Placeholder: {id}</div>;
+  return <div className="p-8 text-ui-md text-ink">Document Page Placeholder: {id}</div>;
 }
 
 export function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/_kit" element={<KitPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/d/:id" element={<DocumentPage />} />
-        <Route path="/_kit" element={<KitPage />} />
-      </Routes>
-    </BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route
+            path="/d/:id"
+            element={
+              <ProtectedRoute>
+                <DocumentPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/_kit" element={<KitPage />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
 
