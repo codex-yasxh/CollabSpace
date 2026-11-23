@@ -3,8 +3,11 @@ import { useParams, Link, useNavigate, useSearchParams } from "react-router-dom"
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Collaboration from "@tiptap/extension-collaboration";
+import CollaborationCaret from "@tiptap/extension-collaboration-caret";
 import { useAuth } from "../context/AuthContext.js";
 import { useCollabSession, type CollabSession } from "../hooks/useCollabSession.js";
+import { renderCaret, selectionRender } from "../lib/caret.js";
+import { getPresenceColor } from "../lib/presence.js";
 import {
   Button,
   Spinner,
@@ -37,9 +40,22 @@ interface DocumentDetail {
 interface CollabEditorAreaProps {
   session: CollabSession;
   isViewer: boolean;
+  user: { id: string; name: string; email: string } | null;
 }
 
-function CollabEditorArea({ session, isViewer }: CollabEditorAreaProps) {
+function CollabEditorArea({ session, isViewer, user }: CollabEditorAreaProps) {
+  const userColor = user?.id ? getPresenceColor(user.id) : { name: "coral", hex: "#C4412E" };
+
+  useEffect(() => {
+    if (user && session.provider.awareness) {
+      session.provider.awareness.setLocalStateField("user", {
+        userId: user.id,
+        name: user.name,
+        color: userColor.hex,
+      });
+    }
+  }, [session, user, userColor.hex]);
+
   const editor = useEditor(
     {
       editable: !isViewer,
@@ -56,6 +72,16 @@ function CollabEditorArea({ session, isViewer }: CollabEditorAreaProps) {
         }),
         Collaboration.configure({
           document: session.ydoc,
+        }),
+        CollaborationCaret.configure({
+          provider: session.provider,
+          user: {
+            userId: user?.id || "guest",
+            name: user?.name || "Guest",
+            color: userColor.hex,
+          },
+          render: renderCaret,
+          selectionRender,
         }),
       ],
       // NEVER pass content option to useEditor per skills.md 6.2
@@ -355,7 +381,7 @@ export function DocumentPage() {
             </div>
           </div>
         ) : (
-          <CollabEditorArea session={session} isViewer={isViewer} />
+          <CollabEditorArea session={session} isViewer={isViewer} user={user} />
         )}
 
         {/* Share Dialog */}
