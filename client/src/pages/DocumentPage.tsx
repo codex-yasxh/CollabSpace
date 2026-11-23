@@ -27,6 +27,7 @@ import {
 } from "../components/ui/index.js";
 import { ShareDialog, type MemberItem } from "../components/ShareDialog.js";
 import { EditorToolbar } from "../components/EditorToolbar.js";
+import { DocumentTitleInput } from "../components/DocumentTitleInput.js";
 import { Users, ChevronDown, ArrowLeft } from "lucide-react";
 
 interface DocumentDetail {
@@ -143,6 +144,25 @@ export function DocumentPage() {
     setToastMessage({ title, description });
     setToastOpen(false);
     setTimeout(() => setToastOpen(true), 50);
+  };
+
+  const handleTitleSave = async (newTitle: string) => {
+    if (!document || !id) return;
+    try {
+      const res = await fetch(`/api/documents/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: newTitle }),
+      });
+      if (res.ok) {
+        const data = (await res.json()) as { document: DocumentDetail };
+        setDocument(data.document);
+      } else {
+        showToast("Couldn't update title", "Check your connection and try again.");
+      }
+    } catch {
+      showToast("Couldn't update title", "Check your connection and try again.");
+    }
   };
 
   const fetchDocument = useCallback(async () => {
@@ -337,9 +357,11 @@ export function DocumentPage() {
 
             <span className="text-ink-soft text-ui-sm">/</span>
 
-            <span className="text-ui-sm font-medium text-ink truncate max-w-xs">
-              {document.title}
-            </span>
+            <DocumentTitleInput
+              title={document.title}
+              canEdit={effectiveRole === "OWNER" || effectiveRole === "EDITOR"}
+              onSave={handleTitleSave}
+            />
 
             {/* Plain text role label (blueprint rule: role as plain text only, no decorative pill) */}
             <span className="text-ui-xs text-ink-soft capitalize">
