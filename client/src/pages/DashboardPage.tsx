@@ -283,7 +283,7 @@ export function DashboardPage() {
                         {/* Actions dropdown menu */}
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <IconButton label="Document options" size="sm" variant="ghost">
+                            <IconButton label={`Document options for ${doc.title}`} size="sm" variant="ghost">
                               <MoreVertical className="w-4 h-4 text-ink-soft" />
                             </IconButton>
                           </DropdownMenuTrigger>
