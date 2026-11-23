@@ -109,7 +109,7 @@ documentRouter.delete(
     try {
       const docId = getDocIdParam(req);
       await deleteDocument(docId);
-      rooms.closeAllConnections(docId);
+      rooms.evictRoomOnDelete(docId);
       res.status(200).json({ ok: true });
     } catch (error) {
       next(error);

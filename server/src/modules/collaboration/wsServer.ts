@@ -70,7 +70,9 @@ export function createCollaborationServer() {
       }
 
       // 3. Cookie contains valid JWT
-      const token = parseCookie(req.headers.cookie, "cs_session");
+      const token =
+        parseCookie(req.headers.cookie, "cs_session") ||
+        parseCookie(req.headers.cookie, "token");
       if (!token) {
         rejectUpgrade(socket, 401, "Unauthorized");
         return;
@@ -78,8 +80,12 @@ export function createCollaborationServer() {
 
       let userId: string;
       try {
-        const decoded = jwt.verify(token, env.JWT_SECRET) as { sub: string };
-        userId = decoded.sub;
+        const decoded = jwt.verify(token, env.JWT_SECRET) as { sub?: string; userId?: string };
+        userId = decoded.userId ?? decoded.sub ?? "";
+        if (!userId) {
+          rejectUpgrade(socket, 401, "Unauthorized");
+          return;
+        }
       } catch {
         rejectUpgrade(socket, 401, "Unauthorized");
         return;

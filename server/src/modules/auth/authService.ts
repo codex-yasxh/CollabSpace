@@ -33,9 +33,10 @@ export function signToken(payload: TokenPayload): string {
 
 export function verifyToken(token: string): TokenPayload | null {
   try {
-    const decoded = jwt.verify(token, env.JWT_SECRET) as TokenPayload;
-    if (typeof decoded === "object" && decoded.userId && decoded.email) {
-      return { userId: decoded.userId, email: decoded.email };
+    const decoded = jwt.verify(token, env.JWT_SECRET) as Record<string, unknown>;
+    const userId = (decoded.userId as string) || (decoded.sub as string);
+    if (typeof decoded === "object" && userId) {
+      return { userId, email: (decoded.email as string) || "" };
     }
     return null;
   } catch {
