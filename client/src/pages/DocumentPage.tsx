@@ -88,12 +88,25 @@ function CollabEditorArea({ session, isViewer, user }: CollabEditorAreaProps) {
       ],
       // NEVER pass content option to useEditor per skills.md 6.2
     },
-    [session],
+    [session, isViewer],
   );
+
+  useEffect(() => {
+    if (editor && !editor.isDestroyed) {
+      editor.setEditable(!isViewer);
+    }
+  }, [editor, isViewer]);
 
   return (
     <>
       <EditorToolbar editor={editor} disabled={isViewer} />
+      {isViewer && (
+        <div className="w-full bg-wash border-b border-line px-6 py-2 flex items-center justify-center text-center shrink-0">
+          <p className="text-ui-xs text-ink-soft">
+            You can view this document. Ask the owner for edit access.
+          </p>
+        </div>
+      )}
       <main className="flex-1 w-full bg-fog py-8 px-4 flex justify-center overflow-y-auto">
         <div className="w-full max-w-paper bg-paper border border-line rounded-page shadow-page p-18 max-md:p-5 max-md:max-w-none">
           <EditorContent editor={editor} />
@@ -111,6 +124,7 @@ export function DocumentPage() {
 
   const forcedState = searchParams.get("state"); // e.g. "no-access" | "not-found"
   const forcedDialog = searchParams.get("dialog"); // e.g. "share-owner" | "share-viewer"
+  const forcedRole = searchParams.get("role"); // e.g. "viewer"
 
   const [document, setDocument] = useState<DocumentDetail | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -299,7 +313,9 @@ export function DocumentPage() {
         : undefined;
 
   const effectiveRole =
-    forcedDialog === "share-viewer" ? "VIEWER" : document.role;
+    forcedRole === "viewer" || forcedDialog === "share-viewer"
+      ? "VIEWER"
+      : document.role;
   const isViewer = effectiveRole === "VIEWER";
   const session = useCollabSession(document.id);
   const activeCollaborators = useActiveCollaborators(session?.provider, user?.id);
