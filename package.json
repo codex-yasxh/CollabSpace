@@ -12,6 +12,8 @@
     "typecheck": "npm run typecheck -w server && npm run typecheck -w client",
     "lint": "eslint .",
     "test": "npm run test -w server --if-present && npm run test -w client --if-present",
+    "build": "npm run build -w client",
+    "start": "npm run migrate && tsx server/src/index.ts",
     "migrate": "npm run migrate -w server",
     "seed": "npm run seed -w server"
   },
